@@ -30,26 +30,44 @@ function App() {
   }, [petType, personality, messages]);
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>🐾 Pet Translator</h1>
-        <p className="subtitle">Traducteur animalier IA</p>
-      </header>
-      <main className="app-main">
-        <aside className="sidebar">
-          <PetSelector
-            petType={petType}
-            personality={personality}
-            onPetChange={(p) => { setPetType(p); if (p === "cat") setPersonality("snobbish"); else setPersonality("excited"); }}
-            onPersonalityChange={setPersonality}
-          />
-          <AudioRecorder onAudioCaptured={handleAudioCaptured} />
-          {loading && <div className="loading-bar">Traduction en cours...</div>}
-        </aside>
-        <section className="chat-section">
-          <ChatUI messages={messages} petType={petType} />
-        </section>
-      </main>
+    <div className="desktop">
+      <div className="phone-frame">
+        <div className="phone-notch">
+          <div className="notch-dynamic-island"></div>
+        </div>
+        <div className="phone-screen">
+          <header className="app-header">
+            <span className="header-pet">{petType === "cat" ? "🐱" : "🐶"}</span>
+            <div className="header-info">
+              <h1>Pet Translator</h1>
+              <span className="header-subtitle">Mon{" "}{petType === "cat" ? "Chat" : "Chien"}</span>
+            </div>
+            <span className="header-battery">🔋</span>
+          </header>
+
+          <div className="phone-content">
+            <ChatUI messages={messages} petType={petType} />
+          </div>
+
+          <div className="phone-controls">
+            {loading && <div className="loading-bar">Traduction en cours...</div>}
+            <div className="controls-row">
+              <div className="controls-pet">
+                <PetSelector
+                  petType={petType}
+                  personality={personality}
+                  onPetChange={(p) => { setPetType(p); if (p === "cat") setPersonality("snobbish"); else setPersonality("excited"); }}
+                  onPersonalityChange={setPersonality}
+                />
+              </div>
+              <div className="controls-record">
+                <AudioRecorder onAudioCaptured={handleAudioCaptured} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="phone-home-bar"></div>
+      </div>
     </div>
   );
 }
