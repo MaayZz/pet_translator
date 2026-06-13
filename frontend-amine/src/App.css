@@ -61,7 +61,8 @@ code, .tech-code {
 }
 
 .panel-header {
-  max-width: 400px;
+  max-width: 420px;
+  text-align: center;
 }
 
 .panel-header h1 {
@@ -93,7 +94,6 @@ code, .tech-code {
   font-size: 14px;
   line-height: 1.7;
   color: var(--panel-text-secondary);
-  text-align: center;
 }
 
 .panel-section {
