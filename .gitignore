@@ -1,0 +1,24 @@
+# --- Données (jamais versionnées) ---
+training/classification/data/
+
+# --- Modèles entraînés ---
+training/classification/models/
+*.h5
+*.pt
+*.pth
+*.ckpt
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
