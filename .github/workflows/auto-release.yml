@@ -1,0 +1,28 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate tag
+        run: |
+          COUNT=$(git rev-list --count HEAD)
+          echo "TAG=v1.0.$COUNT" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Release ${{ env.TAG }}
+          generate_release_notes: true
+          make_latest: true
