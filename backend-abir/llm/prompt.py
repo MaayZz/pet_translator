@@ -16,12 +16,18 @@ def get_system_prompt(personality_key="excited_dog"):
     desc = PERSONALITIES.get(personality_key, PERSONALITIES["excited_dog"])
     return SYSTEM_PROMPT_TEMPLATE.format(personality=desc)
 
-def build_user_prompt(intent, rag_context):
+def build_user_prompt(intent, rag_context, env_context=None):
     """
-    Builds the user prompt incorporating Anas's classification intent and the RAG context.
+    Builds the user prompt incorporating Anas's classification intent, RAG context, and environmental variables.
     """
     prompt = f"The audio classification model detected the following intent: {intent}\n\n"
     
+    if env_context:
+        prompt += "Current Environmental Context:\n"
+        for key, value in env_context.items():
+            prompt += f"- {key.replace('_', ' ').title()}: {value}\n"
+        prompt += "\nPlease ensure your translation logically reflects this environment (e.g. reacting to rain, time of day, or other animals).\n\n"
+
     if rag_context and "No RAG database available" not in rag_context:
         prompt += f"Context from behavioral database:\n{rag_context}\n\n"
         

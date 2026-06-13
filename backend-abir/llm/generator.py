@@ -1,7 +1,7 @@
 import os
-from llama_cpp import Llama
 from .rag_retriever import RAGRetriever
 from .prompt import get_system_prompt, build_user_prompt
+from llama_cpp import Llama
 
 # Path where the GGUF model will be exported by Abir's convert.py
 MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "unsloth.Q4_K_M.gguf")
@@ -25,10 +25,10 @@ class PetTranslatorLLM:
         )
         print("Model loaded successfully.")
 
-    def translate(self, intent_category, personality="excited_dog"):
+    def translate(self, intent_category, personality="excited_dog", env_context=None):
         """
         Translates an intent (provided by Anas's classification model) into a natural sentence.
-        Uses RAG for context and Llama 3.2 for generation.
+        Uses RAG for context, env_context for environment variables, and Llama 3.2 for generation.
         """
         # 1. Retrieve behavioral context based on the intent (e.g. "dog showing Fear")
         query = f"behavior characteristic of a pet showing {intent_category}"
@@ -36,10 +36,10 @@ class PetTranslatorLLM:
         
         # 2. Build prompts
         system_prompt = get_system_prompt(personality)
-        user_prompt = build_user_prompt(intent_category, rag_context)
+        user_prompt = build_user_prompt(intent_category, rag_context, env_context)
         
         if self.llm is None:
-            return f"[Simulated Translation for {intent_category}] - Model not loaded."
+            return f"[Simulated Translation for {intent_category}] - Model not loaded.\n\n--- Prompt that would be sent ---\n{user_prompt}"
 
         # 3. Generate response
         response = self.llm.create_chat_completion(
@@ -58,7 +58,13 @@ if __name__ == "__main__":
     # Test integration without loading the actual heavy model
     translator = PetTranslatorLLM()
     # Mock input coming from Anas's TFJS/MobileNet output
-    mock_intent_from_anas = "Play" 
-    result = translator.translate(mock_intent_from_anas, personality="haughty_cat")
+    mock_intent_from_anas = "Fear" 
+    mock_env = {
+        "location": "outdoor",
+        "weather": "thunderstorm",
+        "time_of_day": "night",
+        "other_animals": "none"
+    }
+    result = translator.translate(mock_intent_from_anas, personality="shy_dog", env_context=mock_env)
     print(f"\nRaw Intent: {mock_intent_from_anas}")
-    print(f"Translation: {result}")
+    print(f"Translation:\n{result}")
