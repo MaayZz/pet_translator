@@ -2,12 +2,8 @@ import { useEffect, useRef } from "react";
 
 const PET_EMOJIS = { cat: "🐱", dog: "🐶" };
 const EMOTION_EMOJIS = {
-  hunger: "🍽️",
-  play: "🎾",
-  attention: "👀",
-  fear: "😰",
-  pain: "💔",
-  content: "😊",
+  hunger: "🍽️", play: "🎾", attention: "👀",
+  fear: "😰", pain: "💔", content: "😊",
 };
 
 export default function ChatUI({ messages }) {
@@ -23,24 +19,18 @@ export default function ChatUI({ messages }) {
         {messages.length === 0 && (
           <div className="chat-empty">
             <span className="chat-empty-icon">🐾</span>
-            <div className="chat-empty-title">Prêt à discuter</div>
-            <div>Appuyez sur le bouton d'enregistrement pour traduire les sons de votre animal</div>
+            <div className="chat-empty-title">Ready to chat</div>
+            <div>Press the record button to translate your pet's sounds</div>
           </div>
         )}
         {messages.map((msg, i) => (
-          <div key={i} className={`message ${msg.role}`}>
-            {msg.role === "pet" && (
-              <div className="message-avatar">{PET_EMOJIS[msg.petType] || "🐾"}</div>
-            )}
+          <div key={i} className="message">
+            <div className="message-avatar">{PET_EMOJIS[msg.petType] || "🐾"}</div>
             <div className="message-bubble">
               <div className="message-text">{msg.text}</div>
               <div className="message-footer">
-                <span className="message-emotion">
-                  {EMOTION_EMOJIS[msg.emotion]} {msg.emotion}
-                </span>
-                <span className="message-time">
-                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </span>
+                <span>{EMOTION_EMOJIS[msg.emotion]} {msg.emotion}</span>
+                <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
             </div>
           </div>

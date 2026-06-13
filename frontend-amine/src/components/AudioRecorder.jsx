@@ -11,11 +11,7 @@ export default function AudioRecorder({ onAudioCaptured }) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder.current = new MediaRecorder(stream, { mimeType: "audio/webm" });
       chunks.current = [];
-
-      mediaRecorder.current.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.current.push(e.data);
-      };
-
+      mediaRecorder.current.ondataavailable = (e) => { if (e.data.size > 0) chunks.current.push(e.data); };
       mediaRecorder.current.onstop = async () => {
         const blob = new Blob(chunks.current, { type: "audio/webm" });
         stream.getTracks().forEach((t) => t.stop());
@@ -23,19 +19,15 @@ export default function AudioRecorder({ onAudioCaptured }) {
         await onAudioCaptured(blob);
         setState("idle");
       };
-
       mediaRecorder.current.start();
       setState("recording");
     } catch (err) {
-      console.error("Microphone access denied:", err);
-      alert("Accès au microphone refusé. Autorisez-le dans votre navigateur.");
+      alert("Microphone access denied. Please allow microphone access.");
       setState("idle");
     }
   };
 
-  const stopRecording = () => {
-    mediaRecorder.current?.stop();
-  };
+  const stopRecording = () => mediaRecorder.current?.stop();
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
@@ -48,25 +40,12 @@ export default function AudioRecorder({ onAudioCaptured }) {
 
   return (
     <div className="audio-recorder">
-      <input
-        ref={fileInput}
-        type="file"
-        accept="audio/*"
-        onChange={handleFileUpload}
-        style={{ display: "none" }}
-      />
+      <input ref={fileInput} type="file" accept="audio/*" onChange={handleFileUpload} hidden />
+      <button className="record-btn outline" onClick={() => fileInput.current?.click()} title="Upload audio file">📂</button>
       <button
-        className="record-btn"
-        onClick={() => fileInput.current?.click()}
-        title="Upload audio"
-      >
-        📂
-      </button>
-      <button
-        className={`record-btn ${state === "recording" ? "recording" : ""}`}
+        className={`record-btn ${state === "recording" ? "recording" : "solid"}`}
         onClick={state === "recording" ? stopRecording : startRecording}
         disabled={state === "processing"}
-        title={state === "idle" ? "Enregistrer" : state === "recording" ? "Arrêter" : "Analyse..."}
       >
         {state === "recording" ? "⏹" : "🎤"}
       </button>
