@@ -63,30 +63,30 @@ code {
 }
 
 .panel-header h1 {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.3px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--primary);
   background: var(--primary-light);
-  padding: 3px 10px;
-  border-radius: 12px;
-  margin-bottom: 8px;
+  padding: 4px 12px;
+  border-radius: 14px;
+  margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .desc {
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--text-secondary);
-  max-width: 340px;
+  max-width: 380px;
 }
 
 .side-panel.right .desc {
@@ -94,12 +94,12 @@ code {
 }
 
 .panel-section h2 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-secondary);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 /* ── Left Panel — Stack ── */
@@ -107,12 +107,12 @@ code {
 .stack-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-width: 360px;
+  gap: 12px;
+  max-width: 400px;
 }
 
 .stack-item {
-  padding: 10px 12px;
+  padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: box-shadow 0.2s;
@@ -122,18 +122,18 @@ code {
 
 .stack-item strong {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
-.stack-item code { font-size: 10px; }
+.stack-item code { font-size: 11px; }
 
 .stack-item p {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
-  line-height: 1.4;
-  margin-top: 4px;
+  line-height: 1.5;
+  margin-top: 5px;
 }
 
 /* ── Right Panel — Pipeline ── */
@@ -141,35 +141,35 @@ code {
 .pipeline {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 320px;
+  gap: 8px;
+  max-width: 360px;
 }
 
 .pipeline-step {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 12px;
+  padding: 12px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
 .step-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--primary);
   flex-shrink: 0;
 }
 
 .pipeline-step strong {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  min-width: 100px;
+  min-width: 120px;
 }
 
 .pipeline-step span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
@@ -178,27 +178,30 @@ code {
 .team {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 280px;
+  gap: 8px;
+  max-width: 340px;
 }
 
 .team-member {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 12px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  gap: 24px;
 }
 
 .team-member strong {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .team-member span {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-secondary);
+  text-align: right;
 }
 
 /* ── Right Panel — Experiments ── */
@@ -207,16 +210,17 @@ code {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 320px;
+  gap: 8px;
+  max-width: 360px;
 }
 
 .exp-list li {
-  font-size: 11px;
-  padding: 8px 12px;
+  font-size: 12px;
+  padding: 10px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 /* ── Phone Section ── */
