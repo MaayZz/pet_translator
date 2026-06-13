@@ -11,60 +11,58 @@ import random
 
 MOCK_RESPONSES = {
     "cat": {
-        "snobbish": {
-            "hunger": "Enfin, tu te décides à nourrir ton roi.",
-            "play": "Ce bout de papier bouge. Intéressant.",
-            "attention": "Tu peux me caresser, je t'accorde cette faveur.",
-            "fear": "Il y a un intrus dans mon royaume.",
-            "pain": "Quelque chose cloche dans mon domaine.",
-            "content": "Tu as mes faveurs pour aujourd'hui.",
+        "cat_snobbish": {
+            "hunger": "Finally, you decide to feed your king.",
+            "play": "That piece of string moves. Interesting.",
+            "attention": "You may pet me, I grant you this favor.",
+            "fear": "There is an intruder in my kingdom.",
+            "pain": "Something is wrong in my domain.",
+            "content": "You have my favor for today.",
         },
-        "timid": {
-            "hunger": "Euh... pardon... est-ce que je pourrais avoir à manger ?",
-            "play": "Si tu veux jouer... c'est d'accord...",
-            "attention": "Tu es là... je suis content...",
-            "fear": "J'ai entendu un bruit... j'ai peur...",
-            "pain": "Ça fait mal... je ne sais pas quoi faire...",
-            "content": "Je suis bien là... tout doux...",
+        "cat_timid": {
+            "hunger": "Um... sorry... could I have some food?",
+            "play": "If you want to play... that's okay...",
+            "attention": "You're here... I'm happy...",
+            "fear": "I heard a noise... I'm scared...",
+            "pain": "It hurts... I don't know what to do...",
+            "content": "I'm cozy right here... nice and soft...",
         },
-        "grumpy": {
-            "hunger": "Encore à la bourre pour mon repas. Pathétique.",
-            "play": "Tu veux jouer ? Tu as 30 secondes.",
-            "attention": "Quoi encore ? Dépêche-toi.",
-            "fear": "Y'a un bruit. Va voir. Maintenant.",
-            "pain": "Quelque chose ne va pas. Bouge-toi.",
-            "content": "Silence. Je dors. Enfin.",
+        "cat_grumpy": {
+            "hunger": "Late for my meal again. Pathetic.",
+            "play": "You want to play? You have 30 seconds.",
+            "attention": "What now? Hurry up.",
+            "fear": "There's a noise. Go check. Now.",
+            "pain": "Something's wrong. Move it.",
+            "content": "Silence. I'm sleeping. Finally.",
         },
     },
     "dog": {
-        "excited": {
-            "hunger": "À MANGER ! À MANGER ! OUI OUI OUI !",
-            "play": "JOUE AVEC MOI ! Balle balle balle balle !",
-            "attention": "REGARDE-MOI ! Je suis LÀ !",
-            "fear": "J'ai peur... RESTE AVEC MOI !",
-            "pain": "Aïe aïe aïe... ça fait mal...",
-            "content": "Je t'aime. Tu es le meilleur. La vie est belle.",
+        "dog_excited": {
+            "hunger": "FOOD! FOOD! YES YES YES!",
+            "play": "PLAY WITH ME! Ball ball ball ball!",
+            "attention": "LOOK AT ME! I'm HERE!",
+            "fear": "I'm scared... STAY WITH ME!",
+            "pain": "Ouch ouch ouch... that hurts...",
+            "content": "I love you. You're the best. Life is beautiful.",
         },
-        "playful": {
-            "hunger": "Un snack ? Pour jouer après ? Oui ?",
-            "play": "Encore une balle ? Encore ? S'IL TE PLAÎT !",
-            "attention": "Hé hé hé ! Tu m'as vu ? J'ai fait un truc cool !",
-            "fear": "C'est quoi ce bruit ? On va voir ? Ensemble ?",
-            "pain": "Je me suis fait mal en jouant...",
-            "content": "Tout est bien quand on est ensemble !",
+        "dog_playful": {
+            "hunger": "A snack? To play after? Yes?",
+            "play": "Another ball? Again? PLEASE!",
+            "attention": "Hey hey hey! Did you see me? I did something cool!",
+            "fear": "What's that noise? Should we check? Together?",
+            "pain": "I hurt myself while playing...",
+            "content": "Everything is good when we're together!",
         },
-        "gentle": {
-            "hunger": "Je mangerais bien un peu, si tu as le temps.",
-            "play": "Je veux bien jouer avec toi, doucement.",
-            "attention": "Je suis là, près de toi. Je t'aime.",
-            "fear": "J'ai un peu peur. Tu me protèges ?",
-            "pain": "Je ne me sens pas bien. Reste avec moi.",
-            "content": "Tout va bien. Je suis heureux avec toi.",
+        "dog_gentle": {
+            "hunger": "I'd love a little food, if you have time.",
+            "play": "I'd like to play with you, gently.",
+            "attention": "I'm here, next to you. I love you.",
+            "fear": "I'm a bit scared. Will you protect me?",
+            "pain": "I don't feel well. Stay with me.",
+            "content": "Everything is fine. I'm happy with you.",
         },
     },
 }
-
-FALLBACK = "Miaou."
 
 def generate_response(prompt: str) -> str:
     try:
@@ -83,13 +81,14 @@ def generate_response(prompt: str) -> str:
     return _mock_response(prompt)
 
 def _mock_response(prompt: str) -> str:
-    for pet_type, personalities in MOCK_RESPONSES.items():
-        for personality, categories in personalities.items():
-            for category, response in categories.items():
-                if category in prompt or personality in prompt or pet_type in prompt:
-                    if random.random() < 0.3 and category != "content":
-                        alt = list(categories.values())
-                        alt.remove(response)
-                        return random.choice(alt)
-                    return response
-    return FALLBACK
+    is_dog = "dog" in prompt
+    pet_key = "dog" if is_dog else "cat"
+    responses = MOCK_RESPONSES.get(pet_key, {})
+    category_map = {"hungry": "hunger", "play": "play", "attention": "attention",
+                    "scared": "fear", "pain": "pain", "happy": "content", "relaxed": "content"}
+    for word, cat_key in category_map.items():
+        if word in prompt:
+            for personality_key, categories in responses.items():
+                if cat_key in categories:
+                    return categories[cat_key]
+    return "Woof."

@@ -1,5 +1,6 @@
 # --- Données (jamais versionnées) ---
 training/classification/data/
+nouveau_data/
 
 # --- Modèles entraînés ---
 training/classification/models/
@@ -23,4 +24,10 @@ env/
 .DS_Store
 Thumbs.db
 
-nouveau_data/
+# --- Node / Frontend ---
+node_modules/
+dist/
+.vite/
+
+# --- Environment ---
+.env

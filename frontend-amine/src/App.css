@@ -7,7 +7,6 @@
   --accent: #8a96ff;
   --accent-glow: rgba(138, 150, 255, 0.2);
   --phone-bg: #111118;
-  --phone-surface: #1a1a26;
   --phone-border: #2a2a3e;
   --phone-text: #e8e8f0;
   --phone-text-secondary: #8888a8;
@@ -15,7 +14,6 @@
   --phone-accent: #8a96ff;
   --phone-accent-bg: rgba(138, 150, 255, 0.15);
   --phone-danger: #ff4757;
-  --phone-danger-bg: rgba(255, 71, 87, 0.15);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -85,7 +83,6 @@ code, .tech-code {
   --accent: #5856d6;
   --accent-glow: rgba(88, 86, 214, 0.15);
   --phone-bg: #f2f2f7;
-  --phone-surface: #ffffff;
   --phone-border: #d2d2d7;
   --phone-text: #1d1d1f;
   --phone-text-secondary: #86868b;
@@ -93,7 +90,6 @@ code, .tech-code {
   --phone-accent: #5856d6;
   --phone-accent-bg: rgba(88, 86, 214, 0.1);
   --phone-danger: #ff3b30;
-  --phone-danger-bg: rgba(255, 59, 48, 0.1);
 }
 
 .app-layout.light-theme .panel-header h1 {
