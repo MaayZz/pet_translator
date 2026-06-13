@@ -46,6 +46,97 @@ code, .tech-code {
   overflow: hidden;
 }
 
+/* ── Theme Toggle ── */
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--panel-border);
+  background: var(--panel-surface);
+  color: var(--panel-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.theme-toggle:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+/* ── Light Theme Overrides ── */
+
+.app-layout.light-theme {
+  --panel-bg: #f5f5f7;
+  --panel-surface: #ffffff;
+  --panel-border: #d2d2d7;
+  --panel-text: #1d1d1f;
+  --panel-text-secondary: #86868b;
+  --accent: #5856d6;
+  --accent-glow: rgba(88, 86, 214, 0.15);
+  --phone-bg: #f2f2f7;
+  --phone-surface: #ffffff;
+  --phone-border: #d2d2d7;
+  --phone-text: #1d1d1f;
+  --phone-text-secondary: #86868b;
+  --phone-bubble: #e8f0fe;
+  --phone-accent: #5856d6;
+  --phone-accent-bg: rgba(88, 86, 214, 0.1);
+  --phone-danger: #ff3b30;
+  --phone-danger-bg: rgba(255, 59, 48, 0.1);
+}
+
+.app-layout.light-theme .panel-header h1 {
+  background: linear-gradient(135deg, #1d1d1f 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.app-layout.light-theme .badge {
+  background: rgba(88, 86, 214, 0.1);
+  border-color: rgba(88, 86, 214, 0.25);
+  color: #5856d6;
+}
+
+.app-layout.light-theme .stack-item:hover,
+.app-layout.light-theme .pipeline-step:hover,
+.app-layout.light-theme .team-member:hover,
+.app-layout.light-theme .exp-list li:hover {
+  background: #f0f0ff;
+}
+
+.app-layout.light-theme .phone-section {
+  background: linear-gradient(135deg, #e8e8ed, #f2f2f7, #e8e8ed);
+}
+
+.app-layout.light-theme .phone-screen {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 0 40px rgba(88, 86, 214, 0.06),
+    0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.app-layout.light-theme .app-header {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom-color: var(--phone-border);
+}
+
+.app-layout.light-theme .phone-footer {
+  background: rgba(255, 255, 255, 0.95);
+  border-top-color: var(--phone-border);
+}
+
 /* ── Side Panels ── */
 
 .side-panel {

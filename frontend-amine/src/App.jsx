@@ -12,6 +12,7 @@ function App() {
   const [petType, setPetType] = useState("cat");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isLight, setIsLight] = useState(false);
 
   const handleAudioCaptured = useCallback(async (audioBlob) => {
     setLoading(true);
@@ -30,7 +31,10 @@ function App() {
   }, [petType, messages]);
 
   return (
-    <div className="app-layout">
+    <div className={"app-layout" + (isLight ? " light-theme" : "")}>
+      <button className="theme-toggle" onClick={() => setIsLight(!isLight)} title="Toggle theme">
+        {isLight ? "🌙" : "☀️"}
+      </button>
       <LeftInfo />
       <div className="phone-section">
         <div className="phone-screen">
