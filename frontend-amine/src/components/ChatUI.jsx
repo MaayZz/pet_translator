@@ -10,7 +10,7 @@ const EMOTION_EMOJIS = {
   content: "😊",
 };
 
-export default function ChatUI({ messages, petType }) {
+export default function ChatUI({ messages }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function ChatUI({ messages, petType }) {
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="chat-empty">
-            <span className="chat-empty-icon">{PET_EMOJIS[petType] || "🐾"}</span>
+            <span className="chat-empty-icon">🐾</span>
             <div className="chat-empty-title">Prêt à discuter</div>
             <div>Appuyez sur le bouton d'enregistrement pour traduire les sons de votre animal</div>
           </div>
@@ -30,7 +30,7 @@ export default function ChatUI({ messages, petType }) {
         {messages.map((msg, i) => (
           <div key={i} className={`message ${msg.role}`}>
             {msg.role === "pet" && (
-              <div className="message-avatar">{PET_EMOJIS[petType] || "🐾"}</div>
+              <div className="message-avatar">{PET_EMOJIS[msg.petType] || "🐾"}</div>
             )}
             <div className="message-bubble">
               <div className="message-text">{msg.text}</div>

@@ -37,7 +37,7 @@ function App() {
     });
     setMessages((prev) => [
       ...prev,
-      { role: "pet", text: response.text, emotion: response.emotion, confidence: response.confidence, timestamp: response.timestamp || new Date().toISOString() },
+      { role: "pet", text: response.text, emotion: response.emotion, confidence: response.confidence, timestamp: response.timestamp || new Date().toISOString(), petType },
     ]);
     setLoading(false);
   }, [petType, personality, messages]);
@@ -64,7 +64,7 @@ function App() {
         </header>
 
         <div className="phone-content">
-          <ChatUI messages={messages} petType={petType} />
+          <ChatUI messages={messages} />
         </div>
 
         <div className="phone-controls">
