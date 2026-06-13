@@ -4,8 +4,8 @@
 This project is part of the Machine Learning (ML01) course. It explores the concept of a "Pet Translation Device" – a small wearable device for pets (cats/dogs) that captures audio, classifies the emotional intent or behavior, and translates it into natural language messages via an LLM.
 
 ## Project Structure
-- `brief_projet.md` : Detailed explanation of the project context, expectations, and instructions.
-- `repartition_taches.md` : Workload distribution and responsibilities for the 4 team members.
+- `project_brief.md` : Detailed explanation of the project context, expectations, and instructions.
+- `task_distribution.md` : Workload distribution and responsibilities for the 4 team members.
 
 ## Core Technologies
 - Audio Signal Processing & VAD (Voice Activity Detection)
