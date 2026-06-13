@@ -17,11 +17,12 @@ app.add_middleware(
 
 history_store = []
 
+DEFAULT_PERSONALITY = {"cat": "cat_snobbish", "dog": "dog_excited"}
+
 class TranslateRequest(BaseModel):
     category: str
     confidence: float
     pet_type: str = "cat"
-    personality: str = "snobbish"
     history: list = []
 
 class TranslateResponse(BaseModel):
@@ -36,11 +37,12 @@ def ping():
 
 @app.post("/translate", response_model=TranslateResponse)
 def translate(req: TranslateRequest):
+    personality = DEFAULT_PERSONALITY.get(req.pet_type, "cat_snobbish")
     prompt = build_prompt(
         category=req.category,
         confidence=req.confidence,
         pet_type=req.pet_type,
-        personality=req.personality,
+        personality=personality,
         history=req.history,
     )
     text = generate_response(prompt)
@@ -50,7 +52,7 @@ def translate(req: TranslateRequest):
         "emotion": req.category,
         "confidence": req.confidence,
         "pet_type": req.pet_type,
-        "personality": req.personality,
+        "personality": personality,
         "timestamp": now,
     }
     history_store.append(entry)
