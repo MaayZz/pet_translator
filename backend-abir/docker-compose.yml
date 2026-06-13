@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  llm-backend:
+    build: .
+    container_name: abir_llm_inference
+    volumes:
+      - .:/app
+      # We map the models directory so that heavy GGUF files persist outside the container
+      - ./models:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python -m llm.generator
