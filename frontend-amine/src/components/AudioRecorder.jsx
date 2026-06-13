@@ -4,6 +4,7 @@ export default function AudioRecorder({ onAudioCaptured }) {
   const [state, setState] = useState("idle");
   const mediaRecorder = useRef(null);
   const chunks = useRef([]);
+  const fileInput = useRef(null);
 
   const startRecording = async () => {
     try {
@@ -36,18 +37,39 @@ export default function AudioRecorder({ onAudioCaptured }) {
     mediaRecorder.current?.stop();
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setState("processing");
+    onAudioCaptured(file);
+    setState("idle");
+    e.target.value = "";
+  };
+
   return (
     <div className="audio-recorder">
+      <input
+        ref={fileInput}
+        type="file"
+        accept="audio/*"
+        onChange={handleFileUpload}
+        style={{ display: "none" }}
+      />
+      <button
+        className="record-btn"
+        onClick={() => fileInput.current?.click()}
+        title="Upload audio"
+      >
+        📂
+      </button>
       <button
         className={`record-btn ${state === "recording" ? "recording" : ""}`}
         onClick={state === "recording" ? stopRecording : startRecording}
         disabled={state === "processing"}
+        title={state === "idle" ? "Enregistrer" : state === "recording" ? "Arrêter" : "Analyse..."}
       >
-        {state === "idle" && "🎤 Enregistrer"}
-        {state === "recording" && "⏹ Arrêter"}
-        {state === "processing" && "⏳ Analyse..."}
+        {state === "recording" ? "⏹" : "🎤"}
       </button>
-      {state === "recording" && <div className="recording-indicator">Enregistrement en cours...</div>}
     </div>
   );
 }
