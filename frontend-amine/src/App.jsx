@@ -2,13 +2,14 @@ import { useState, useCallback } from "react";
 import PetSelector from "./components/PetSelector";
 import AudioRecorder from "./components/AudioRecorder";
 import ChatUI from "./components/ChatUI";
+import LeftInfo from "./components/LeftInfo";
+import RightInfo from "./components/RightInfo";
 import { classifyAudio } from "./lib/modelLoader";
 import { translate } from "./lib/api";
 import "./App.css";
 
 function App() {
   const [petType, setPetType] = useState("cat");
-  const [personality, setPersonality] = useState("snobbish");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -19,37 +20,37 @@ function App() {
       category: result.category,
       confidence: result.confidence,
       petType,
-      personality,
       history: messages,
     });
     setMessages((prev) => [
       ...prev,
-      { role: "pet", text: response.text, emotion: response.emotion, confidence: response.confidence, timestamp: response.timestamp || new Date().toISOString() },
+      { role: "pet", text: response.text, emotion: response.emotion, confidence: response.confidence, timestamp: response.timestamp || new Date().toISOString(), petType },
     ]);
     setLoading(false);
-  }, [petType, personality, messages]);
+  }, [petType, messages]);
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>🐾 Pet Translator</h1>
-        <p className="subtitle">Traducteur animalier IA</p>
-      </header>
-      <main className="app-main">
-        <aside className="sidebar">
-          <PetSelector
-            petType={petType}
-            personality={personality}
-            onPetChange={(p) => { setPetType(p); if (p === "cat") setPersonality("snobbish"); else setPersonality("excited"); }}
-            onPersonalityChange={setPersonality}
-          />
-          <AudioRecorder onAudioCaptured={handleAudioCaptured} />
-          {loading && <div className="loading-bar">Traduction en cours...</div>}
-        </aside>
-        <section className="chat-section">
-          <ChatUI messages={messages} petType={petType} />
-        </section>
-      </main>
+    <div className="app-layout">
+      <LeftInfo />
+      <div className="phone-section">
+        <div className="phone-screen">
+          <header className="app-header">
+            <span className="header-avatar">{petType === "cat" ? "🐱" : "🐶"}</span>
+            <span className="header-title">Pet Translator</span>
+          </header>
+          <div className="phone-content">
+            <ChatUI messages={messages} />
+          </div>
+          <div className="phone-footer">
+            {loading && <div className="loading-bar">Translating...</div>}
+            <div className="footer-row">
+              <PetSelector petType={petType} onPetChange={setPetType} />
+              <AudioRecorder onAudioCaptured={handleAudioCaptured} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <RightInfo />
     </div>
   );
 }
