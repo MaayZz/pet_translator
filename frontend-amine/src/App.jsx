@@ -31,50 +31,39 @@ function App() {
 
   return (
     <div className="desktop">
-      <div className="phone-frame">
-        <div className="phone-notch">
-          <div className="notch-island"></div>
-          <div className="notch-camera"></div>
-        </div>
-        <div className="phone-screen">
-          <header className="app-header">
-            <div className="header-avatar">
-              {petType === "cat" ? "🐱" : "🐶"}
-            </div>
-            <div className="header-info">
-              <h1>Pet Translator</h1>
-              <span className="header-subtitle">
-                {petType === "cat" ? "Mon Chat" : "Mon Chien"} · {personality === "snobbish" ? "Hautain" : personality === "timid" ? "Timide" : personality === "grumpy" ? "Grumpy" : personality === "excited" ? "Surexcité" : personality === "playful" ? "Joueur" : "Doux"}
-              </span>
-            </div>
-            <div className="header-icons">
-              <span>📶</span>
-              <span>🔋</span>
-            </div>
-          </header>
-
-          <div className="phone-content">
-            <ChatUI messages={messages} petType={petType} />
+      <div className="phone-screen">
+        <header className="app-header">
+          <div className="header-avatar">
+            {petType === "cat" ? "🐱" : "🐶"}
           </div>
+          <div className="header-info">
+            <h1>Pet Translator</h1>
+            <span className="header-subtitle">
+              {petType === "cat" ? "Mon Chat" : "Mon Chien"} · {personality === "snobbish" ? "Hautain" : personality === "timid" ? "Timide" : personality === "grumpy" ? "Grumpy" : personality === "excited" ? "Surexcité" : personality === "playful" ? "Joueur" : "Doux"}
+            </span>
+          </div>
+        </header>
 
-          <div className="phone-controls">
-            {loading && <div className="loading-bar">✨ Traduction en cours...</div>}
-            <div className="controls-row">
-              <div className="controls-pet">
-                <PetSelector
-                  petType={petType}
-                  personality={personality}
-                  onPetChange={(p) => { setPetType(p); if (p === "cat") setPersonality("snobbish"); else setPersonality("excited"); }}
-                  onPersonalityChange={setPersonality}
-                />
-              </div>
-              <div className="controls-record">
-                <AudioRecorder onAudioCaptured={handleAudioCaptured} />
-              </div>
+        <div className="phone-content">
+          <ChatUI messages={messages} petType={petType} />
+        </div>
+
+        <div className="phone-controls">
+          {loading && <div className="loading-bar">✨ Traduction en cours...</div>}
+          <div className="controls-row">
+            <div className="controls-pet">
+              <PetSelector
+                petType={petType}
+                personality={personality}
+                onPetChange={(p) => { setPetType(p); if (p === "cat") setPersonality("snobbish"); else setPersonality("excited"); }}
+                onPersonalityChange={setPersonality}
+              />
+            </div>
+            <div className="controls-record">
+              <AudioRecorder onAudioCaptured={handleAudioCaptured} />
             </div>
           </div>
         </div>
-        <div className="phone-home-bar"></div>
       </div>
     </div>
   );
