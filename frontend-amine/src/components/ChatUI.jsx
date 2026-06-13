@@ -19,13 +19,12 @@ export default function ChatUI({ messages, petType }) {
 
   return (
     <div className="chat-container">
-      <div className="chat-header">
-        {PET_EMOJIS[petType] || "🐾"} Discussion avec mon animal
-      </div>
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="chat-empty">
-            Appuyez sur "Enregistrer" pour commencer la discussion
+            <span className="chat-empty-icon">{PET_EMOJIS[petType] || "🐾"}</span>
+            <div className="chat-empty-title">Prêt à discuter</div>
+            <div>Appuyez sur le bouton d'enregistrement pour traduire les sons de votre animal</div>
           </div>
         )}
         {messages.map((msg, i) => (
@@ -40,7 +39,7 @@ export default function ChatUI({ messages, petType }) {
                   {EMOTION_EMOJIS[msg.emotion]} {msg.emotion}
                 </span>
                 <span className="message-time">
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
             </div>

@@ -33,16 +33,24 @@ function App() {
     <div className="desktop">
       <div className="phone-frame">
         <div className="phone-notch">
-          <div className="notch-dynamic-island"></div>
+          <div className="notch-island"></div>
+          <div className="notch-camera"></div>
         </div>
         <div className="phone-screen">
           <header className="app-header">
-            <span className="header-pet">{petType === "cat" ? "🐱" : "🐶"}</span>
+            <div className="header-avatar">
+              {petType === "cat" ? "🐱" : "🐶"}
+            </div>
             <div className="header-info">
               <h1>Pet Translator</h1>
-              <span className="header-subtitle">Mon{" "}{petType === "cat" ? "Chat" : "Chien"}</span>
+              <span className="header-subtitle">
+                {petType === "cat" ? "Mon Chat" : "Mon Chien"} · {personality === "snobbish" ? "Hautain" : personality === "timid" ? "Timide" : personality === "grumpy" ? "Grumpy" : personality === "excited" ? "Surexcité" : personality === "playful" ? "Joueur" : "Doux"}
+              </span>
             </div>
-            <span className="header-battery">🔋</span>
+            <div className="header-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
           </header>
 
           <div className="phone-content">
@@ -50,7 +58,7 @@ function App() {
           </div>
 
           <div className="phone-controls">
-            {loading && <div className="loading-bar">Traduction en cours...</div>}
+            {loading && <div className="loading-bar">✨ Traduction en cours...</div>}
             <div className="controls-row">
               <div className="controls-pet">
                 <PetSelector
