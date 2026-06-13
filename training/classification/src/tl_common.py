@@ -18,6 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     accuracy_score,
@@ -63,6 +64,55 @@ def class_weight_dict(y_train: np.ndarray) -> dict[int, float]:
     classes = np.unique(y_train)
     weights = compute_class_weight("balanced", classes=classes, y=y_train)
     return {int(c): float(w) for c, w in zip(classes, weights)}
+
+
+def build_head(input_dim: int, n_classes: int) -> tf.keras.Model:
+    """Small dense classification head shared by every transfer-learning approach."""
+    return tf.keras.Sequential(
+        [
+            tf.keras.layers.Input(shape=(input_dim,)),
+            tf.keras.layers.Dense(64, activation="relu"),
+            tf.keras.layers.Dropout(0.3),
+            tf.keras.layers.Dense(n_classes, activation="softmax"),
+        ]
+    )
+
+
+def train_head(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+    n_classes: int,
+) -> tuple[tf.keras.Model, tf.keras.callbacks.History]:
+    """Build + train the shared head with the same fixed defaults everywhere:
+    Adam(1e-3), up to 50 epochs, batch_size=8, class_weight="balanced" (from
+    y_train only), early stopping on val_loss (patience=5, restore best
+    weights). Resets the global seed so every call is reproducible.
+    """
+    tf.keras.utils.set_random_seed(SEED)
+    model = build_head(X_train.shape[1], n_classes)
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(1e-3),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+
+    early_stop = tf.keras.callbacks.EarlyStopping(
+        monitor="val_loss", patience=5, restore_best_weights=True
+    )
+
+    history = model.fit(
+        X_train,
+        y_train,
+        validation_data=(X_val, y_val),
+        epochs=50,
+        batch_size=8,
+        verbose=0,
+        class_weight=class_weight_dict(y_train),
+        callbacks=[early_stop],
+    )
+    return model, history
 
 
 def evaluate_and_plot(

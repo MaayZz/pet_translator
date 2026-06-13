@@ -38,7 +38,6 @@ import time
 
 import librosa
 import numpy as np
-import tensorflow as tf
 import tensorflow_hub as hub
 
 from preprocess import fix_length
@@ -48,11 +47,10 @@ from tl_common import (
     MODELS_DIR,
     REPORTS_DIR,
     SAMPLE_RATE,
-    SEED,
-    class_weight_dict,
     evaluate_and_plot,
     label_names,
     load_manifest,
+    train_head,
 )
 
 YAMNET_URL = "https://tfhub.dev/google/yamnet/1"
@@ -67,17 +65,6 @@ def extract_embeddings(yamnet, df, animal: str) -> np.ndarray:
         _, emb, _ = yamnet(y)
         embeddings.append(emb.numpy().mean(axis=0))
     return np.stack(embeddings).astype(np.float32)
-
-
-def build_head(input_dim: int, n_classes: int) -> tf.keras.Model:
-    return tf.keras.Sequential(
-        [
-            tf.keras.layers.Input(shape=(input_dim,)),
-            tf.keras.layers.Dense(64, activation="relu"),
-            tf.keras.layers.Dropout(0.3),
-            tf.keras.layers.Dense(n_classes, activation="softmax"),
-        ]
-    )
 
 
 def process_animal(animal: str, yamnet) -> dict:
@@ -95,28 +82,13 @@ def process_animal(animal: str, yamnet) -> dict:
         splits[split] = (X, y)
         print(f"    {split}: {X.shape}")
 
-    tf.keras.utils.set_random_seed(SEED)
-    model = build_head(splits["train"][0].shape[1], len(cfg["classes"]))
-    model.compile(
-        optimizer=tf.keras.optimizers.Adam(1e-3),
-        loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"],
-    )
-
-    early_stop = tf.keras.callbacks.EarlyStopping(
-        monitor="val_loss", patience=5, restore_best_weights=True
-    )
-
     start = time.time()
-    history = model.fit(
+    model, history = train_head(
         splits["train"][0],
         splits["train"][1],
-        validation_data=splits["val"],
-        epochs=50,
-        batch_size=8,
-        verbose=0,
-        class_weight=class_weight_dict(splits["train"][1]),
-        callbacks=[early_stop],
+        splits["val"][0],
+        splits["val"][1],
+        len(cfg["classes"]),
     )
     elapsed = time.time() - start
 
