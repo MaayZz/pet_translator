@@ -6,10 +6,10 @@ const PIPELINE = [
 ];
 
 const TEAM = [
-  { name: "Member 1", role: "Audio Pipeline & VAD" },
-  { name: "Member 2", role: "Classification Model" },
-  { name: "Member 3", role: "LLM Fine-tuning" },
-  { name: "Member 4", role: "Frontend & Integration" },
+  { name: "Mohamed", role: "Audio Pipeline & VAD" },
+  { name: "Anas", role: "Classification Model" },
+  { name: "Abir", role: "LLM Fine-tuning" },
+  { name: "Amine", role: "Frontend & Integration" },
 ];
 
 const EXPERIMENTS = [
