@@ -1,14 +1,11 @@
 :root {
-  --panel-bg: #0d0d12;
-  --panel-surface: #15151e;
-  --panel-border: #2a2a3a;
-  --panel-text: #e8e8ed;
-  --panel-text-secondary: #8888a0;
-  --accent: #7c8aff;
-  --accent-glow: rgba(124, 138, 255, 0.15);
-  --green: #5cc47c;
-  --orange: #f0a85a;
-  --pink: #e86a9a;
+  --panel-bg: #0a0a0f;
+  --panel-surface: #181825;
+  --panel-border: #3a3a50;
+  --panel-text: #f0f0f5;
+  --panel-text-secondary: #a0a0c0;
+  --accent: #8a96ff;
+  --accent-glow: rgba(138, 150, 255, 0.2);
   --phone-bg: #f2f2f7;
   --surface: #ffffff;
   --primary: #007aff;
@@ -33,11 +30,11 @@ body {
 code, .tech-code {
   font-family: "JetBrains Mono", "SF Mono", monospace;
   font-size: 11px;
-  background: rgba(124, 138, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  color: var(--accent);
-  border: 1px solid rgba(124, 138, 255, 0.15);
+  background: rgba(138, 150, 255, 0.12);
+  padding: 3px 10px;
+  border-radius: 6px;
+  color: #b0bcff;
+  border: 1px solid rgba(138, 150, 255, 0.25);
 }
 
 .app-layout {
@@ -79,15 +76,15 @@ code, .tech-code {
 .badge {
   display: inline-block;
   font-size: 10px;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-glow);
-  padding: 4px 12px;
-  border-radius: 12px;
+  font-weight: 700;
+  color: #b0bcff;
+  background: rgba(138, 150, 255, 0.15);
+  padding: 5px 14px;
+  border-radius: 14px;
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  border: 1px solid rgba(124, 138, 255, 0.2);
+  border: 1px solid rgba(138, 150, 255, 0.3);
 }
 
 .desc {
@@ -131,7 +128,8 @@ code, .tech-code {
 
 .stack-item:hover {
   border-color: var(--accent);
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: 0 0 30px var(--accent-glow);
+  background: #1e1e32;
 }
 
 .stack-item strong {
@@ -170,16 +168,17 @@ code, .tech-code {
 
 .pipeline-step:hover {
   border-color: var(--accent);
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: 0 0 30px var(--accent-glow);
+  background: #1e1e32;
 }
 
 .step-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #b0bcff;
   flex-shrink: 0;
-  box-shadow: 0 0 8px var(--accent);
+  box-shadow: 0 0 12px rgba(138, 150, 255, 0.6);
 }
 
 .pipeline-step strong {
@@ -216,7 +215,8 @@ code, .tech-code {
 
 .team-member:hover {
   border-color: var(--accent);
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: 0 0 30px var(--accent-glow);
+  background: #1e1e32;
 }
 
 .team-member strong {
@@ -256,7 +256,8 @@ code, .tech-code {
 .exp-list li:hover {
   border-color: var(--accent);
   color: var(--panel-text);
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: 0 0 30px var(--accent-glow);
+  background: #1e1e32;
 }
 
 /* ── Phone Section ── */
