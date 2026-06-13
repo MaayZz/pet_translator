@@ -2,9 +2,10 @@ import { useState, useCallback } from "react";
 import PetSelector from "./components/PetSelector";
 import AudioRecorder from "./components/AudioRecorder";
 import ChatUI from "./components/ChatUI";
+import LeftInfo from "./components/LeftInfo";
+import RightInfo from "./components/RightInfo";
 import { classifyAudio } from "./lib/modelLoader";
 import { translate } from "./lib/api";
-import ProjectInfo from "./components/ProjectInfo";
 import "./App.css";
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
 
   return (
     <div className="app-layout">
+      <LeftInfo />
       <div className="phone-section">
         <div className="phone-screen">
           <header className="app-header">
@@ -40,7 +42,7 @@ function App() {
             <ChatUI messages={messages} />
           </div>
           <div className="phone-footer">
-            {loading && <div className="loading-bar">✨ Translating...</div>}
+            {loading && <div className="loading-bar">Translating...</div>}
             <div className="footer-row">
               <PetSelector petType={petType} onPetChange={setPetType} />
               <AudioRecorder onAudioCaptured={handleAudioCaptured} />
@@ -48,7 +50,7 @@ function App() {
           </div>
         </div>
       </div>
-      <ProjectInfo />
+      <RightInfo />
     </div>
   );
 }
