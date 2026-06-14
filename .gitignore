@@ -31,3 +31,5 @@ dist/
 
 # --- Environment ---
 .env
+
+backend/audio/data/
