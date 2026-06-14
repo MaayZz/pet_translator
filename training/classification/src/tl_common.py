@@ -66,14 +66,26 @@ def class_weight_dict(y_train: np.ndarray) -> dict[int, float]:
     return {int(c): float(w) for c, w in zip(classes, weights)}
 
 
-def build_head(input_dim: int, n_classes: int) -> tf.keras.Model:
-    """Small dense classification head shared by every transfer-learning approach."""
+def build_head(
+    input_dim: int,
+    n_classes: int,
+    dense_units: int = 64,
+    dropout: float = 0.3,
+    l2: float = 0.0,
+) -> tf.keras.Model:
+    """Small dense classification head shared by every transfer-learning approach.
+
+    Defaults (dense_units=64, dropout=0.3, l2=0) reproduce the first
+    transfer-learning run exactly. dense_units/dropout/l2 are exposed so
+    src/tune_head.py can search over them without duplicating this function.
+    """
+    regularizer = tf.keras.regularizers.l2(l2) if l2 > 0 else None
     return tf.keras.Sequential(
         [
             tf.keras.layers.Input(shape=(input_dim,)),
-            tf.keras.layers.Dense(64, activation="relu"),
-            tf.keras.layers.Dropout(0.3),
-            tf.keras.layers.Dense(n_classes, activation="softmax"),
+            tf.keras.layers.Dense(dense_units, activation="relu", kernel_regularizer=regularizer),
+            tf.keras.layers.Dropout(dropout),
+            tf.keras.layers.Dense(n_classes, activation="softmax", kernel_regularizer=regularizer),
         ]
     )
 
@@ -84,16 +96,24 @@ def train_head(
     X_val: np.ndarray,
     y_val: np.ndarray,
     n_classes: int,
+    dense_units: int = 64,
+    dropout: float = 0.3,
+    l2: float = 0.0,
+    lr: float = 1e-3,
 ) -> tuple[tf.keras.Model, tf.keras.callbacks.History]:
     """Build + train the shared head with the same fixed defaults everywhere:
     Adam(1e-3), up to 50 epochs, batch_size=8, class_weight="balanced" (from
     y_train only), early stopping on val_loss (patience=5, restore best
     weights). Resets the global seed so every call is reproducible.
+
+    dense_units/dropout/l2/lr default to the values used in the first
+    transfer-learning run; src/tune_head.py overrides them to search the
+    head's hyperparameters.
     """
     tf.keras.utils.set_random_seed(SEED)
-    model = build_head(X_train.shape[1], n_classes)
+    model = build_head(X_train.shape[1], n_classes, dense_units=dense_units, dropout=dropout, l2=l2)
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(1e-3),
+        optimizer=tf.keras.optimizers.Adam(lr),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
     )
