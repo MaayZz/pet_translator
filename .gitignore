@@ -2,6 +2,7 @@
 training/classification/data/
 nouveau_data/
 dataset_nettoye/
+backend/audio/data/
 
 # --- Modèles entraînés ---
 training/classification/models/
@@ -32,4 +33,3 @@ dist/
 
 # --- Environment ---
 .env
-dataset_nettoye/
