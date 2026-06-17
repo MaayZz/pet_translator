@@ -13,6 +13,12 @@ where the numbers should not be over-interpreted. Where a result is "within
 noise" (smaller than the relevant standard deviation), I say so explicitly,
 and I do not present it as an improvement.
 
+*Update: steps 8 and 9 were added after the original version to incorporate
+two subsequent experiments (denoising comparison and class-imbalance
+techniques). Every number in those steps is taken directly from their
+respective sub-reports (`denoise_comparison_summary.md` and
+`imbalance_experiments_summary.md`).*
+
 ## 1. Problem and objective
 
 "Pet Translator" takes a short audio clip of a pet and turns it into a
@@ -504,9 +510,85 @@ the same range. AST inference itself ran on a Colab GPU (135.0s total for
 CPU-only local inference at a useful speed, which becomes relevant for the
 production choice in section 8.
 
+### Step 8 - Raw vs. denoised audio comparison
+
+**Goal**: a teammate built an audio-cleaning pipeline and produced a denoised
+version of every clip, with identical filenames and folder structure
+(`dataset_nettoye/data/clean/`). I evaluated whether training on this denoised
+audio changes any CV metric - same model, same CV protocol, same splits, same
+seed; only the audio source changes.
+
+All 113 dog and 440 cat manifest files were verified present in both the raw
+and clean sources before running. The RAW condition (`dataset_nettoye/data/raw/`)
+reproduced the step-3 repères exactly (dog 0.8244, cat 0.5223), confirming
+the protocol was intact before reading the CLEAN numbers.
+
+| Animal | Condition | Macro-F1 (CV) | Delta | Verdict |
+|---|---|---|---|---|
+| Dog | RAW | 0.8244 ± 0.0997 | — | — |
+| Dog | CLEAN | 0.8354 ± 0.0972 | +0.0110 | within noise (0.11× std) |
+| Cat | RAW | 0.5223 ± 0.1158 | — | — |
+| Cat | CLEAN | 0.4694 ± 0.0811 | -0.0529 | within noise (0.46× std) |
+
+Cat `food` F1: RAW 0.3646, CLEAN 0.3172, delta -0.0474, within noise.
+
+**Conclusion**: denoising has no significant effect in either direction for
+either animal. This eliminates audio noise/quality as an explanation for the
+cat `food` plateau. Total time: 89s on CPU.
+
+### Step 9 - Class-imbalance techniques: focal loss and SMOTE
+
+**Goal**: target the cat `food` class imbalance (92/440 clips, 20.9%) directly,
+with two techniques not yet tried: focal loss (replaces cross-entropy) and SMOTE
+(over-samples the minority class in feature space, train fold only). Four
+conditions were compared on the same frozen MobileNetV2 features, same CV folds:
+
+- **BASELINE**: cross-entropy + `class_weight='balanced'` (reference)
+- **FOCAL**: focal loss (`gamma=2.0`), no `class_weight` (focal loss handles
+  imbalance via its modulating factor; combining with `class_weight` would
+  double-count the correction)
+- **SMOTE**: cross-entropy + `class_weight`, SMOTE applied **on `X[train_idx]`
+  of each fold only** — validation always contains only real, original clips.
+  For cat, the group-safe split guarantees synthetic samples interpolate only
+  among training-fold cats, not validation cats.
+- **SMOTE+FOCAL**: SMOTE + focal loss (no `class_weight`)
+
+0 group violations across all folds and all four conditions. SMOTE added
+~18-21 synthetic samples per dog fold and ~146-203 per cat fold.
+
+**Dog** (all deltas < 0.11× std — all noise):
+
+| Condition | Macro-F1 (CV mean ± std) | Delta |
+|---|---|---|
+| BASELINE | 0.8244 ± 0.1114 | — |
+| FOCAL | 0.8340 ± 0.1019 | +0.0096 (noise) |
+| SMOTE | 0.8345 ± 0.1145 | +0.0101 (noise) |
+| SMOTE+FOCAL | 0.8318 ± 0.0935 | +0.0074 (noise) |
+
+**Cat**:
+
+| Condition | Macro-F1 (CV) | `food` F1 | `food` Precision | `food` Recall |
+|---|---|---|---|---|
+| BASELINE | 0.5223 ± 0.1338 | 0.3646 | 0.3648 | 0.3751 |
+| FOCAL | 0.4967 ± 0.1160 | 0.3168 | 0.3380 | 0.2991 |
+| SMOTE | 0.4718 ± 0.1239 | 0.3561 | 0.3128 | 0.4688 |
+| SMOTE+FOCAL | 0.4773 ± 0.1585 | 0.3777 | 0.3179 | 0.5021 |
+
+All macro-F1 deltas for cat are negative and within noise (largest: -0.0505,
+0.38× std). The precision/recall breakdown on `food` tells the real story:
+**SMOTE raises `food` recall from 0.38 to 0.47-0.50, but simultaneously lowers
+`food` precision from 0.36 to 0.31-0.32, leaving F1 essentially unchanged.**
+The model generates more `food` predictions, catching more true positives, but
+also more false positives — because the MobileNetV2 features are not distinctive
+enough to make those extra predictions reliably precise. Focal loss alone also
+fails to improve `food` (F1 0.3168 vs 0.3646 baseline, within noise).
+
+**Conclusion**: this is the fifth independent lever showing no significant
+improvement. The production model is unchanged. Total time: 132s on CPU.
+
 ## 5. Central diagnosis: the bottleneck is the data, not the model
 
-Section 4 walks through four independent levers, each targeting a different
+Section 4 walks through five independent levers, each targeting a different
 part of the pipeline:
 
 1. **Head hyperparameters** (dropout, L2, width, learning rate) - step 4
@@ -516,13 +598,32 @@ part of the pipeline:
    margin/generative classifiers) - step 6
 4. **The feature-extraction backbone itself** (ImageNet CNN -> AudioSet CNN ->
    AudioSet Transformer) - step 7
+5. **Class-imbalance handling** (focal loss and SMOTE on features, train fold
+   only) - step 9
 
-None of these four, each evaluated under the same CV protocol with the same
-seed and folds, produced a change larger than its own standard deviation. For
-cat's `food` class in particular - the single most-tested number in this whole
-project - the result is essentially the same story every time: roughly
+Additionally, step 8 tested an orthogonal hypothesis: that the cat `food`
+plateau might be partly explained by audio noise quality. Training on a
+teammate's denoised version of the same clips (same CV splits, same seed)
+produced deltas of +0.0110 for dog and -0.0529 for cat — both within noise.
+This eliminates audio quality as an explanation alongside the five levers above.
+
+None of these five levers, each evaluated under the same CV protocol with the
+same seed and folds, produced a change larger than its own standard deviation.
+For cat's `food` class in particular - the single most-tested number in this
+whole project - the result is essentially the same story every time: roughly
 0.31-0.40 mean F1, with a standard deviation (0.09-0.21) often *larger* than
 the differences between approaches.
+
+The precision/recall breakdown from step 9's SMOTE results provides a concrete
+illustration of *why* the `food` plateau is so stubborn. SMOTE raised `food`
+recall from 0.38 to 0.47-0.50 (the model issues more `food` predictions and
+catches more true positives), but simultaneously lowered `food` precision from
+0.36 to 0.31-0.32 (it also predicts `food` for more non-food clips). The F1
+stayed flat. This is the classic over-sampling failure mode when the underlying
+features lack discriminative power: generating more synthetic `food` examples
+teaches the model to predict `food` more often, but the MobileNetV2 features
+are not distinctive enough to make those additional predictions reliably
+correct.
 
 I read this as an **elimination-based conclusion**: if the limiting factor
 were the head's capacity/regularization, step 4 should have shown a real gain
@@ -534,17 +635,20 @@ generative), step 6 should have shown one family pulling ahead - instead all
 five land within ~1 std of each other. If it were the choice of pretrained
 feature space (natural images vs. general audio events), step 7's switch to an
 audio-native transformer should have shown a clear jump - instead it's within
-noise of MobileNetV2.
+noise of MobileNetV2. If it were class imbalance per se, focal loss or SMOTE
+(step 9) should have improved `food` F1 - instead SMOTE only redistributed
+errors between precision and recall without net gain. If it were audio noise,
+step 8's denoised audio should have helped - it did not.
 
-Four very different interventions, four "no significant change" results, with
-`food` (92 clips spread across 21 cats, ~4.4 clips/cat on average) being the
-hardest and noisiest number throughout. The most consistent explanation across
-all of this is that **the bottleneck is the dataset itself** - specifically its
-size and the resulting per-fold variance - rather than anything about the
-model, the classifier, or the backbone sitting on top of it. This doesn't mean
-the ceiling is *permanently* fixed (see section 9 for what I think could
-actually move it), but none of the "free" levers I had access to this session
-did.
+Five very different levers, plus a denoising test — six "no significant change"
+results — with `food` (92 clips spread across 21 cats, ~4.4 clips/cat on
+average) being the hardest and noisiest number throughout. The most consistent
+explanation across all of this is that **the bottleneck is the dataset itself**
+- specifically its size and the resulting per-fold variance - rather than
+anything about the model, the classifier, the backbone, or the signal quality
+sitting on top of it. This doesn't mean the ceiling is *permanently* fixed (see
+section 9 for what I think could actually move it), but none of the levers I
+had access to did.
 
 ## 6. Honest final results
 
@@ -621,8 +725,8 @@ trust.
 
 ## 8. Production model and integration
 
-Once the diagnosis in section 5 was clear - four independent levers all
-plateauing at the same level - the next step was not more optimization, but
+Once the diagnosis in section 5 was clear - five levers plus a denoising test,
+all plateauing at the same level - the next step was not more optimization, but
 **picking one combination per animal, freezing it, and wrapping it in a stable
 interface** for the LLM module and the app (`production_model_summary.md`,
 `model_interface.md`).
@@ -749,25 +853,25 @@ reasonably confident across all three classes.
 ## 9. Limits and future directions
 
 **The data ceiling on `food` is the main open problem.** Section 5's
-elimination argument suggests that none of head tuning, augmentation,
-classifier family, or backbone choice will move `food` F1 meaningfully with
-the current 92-clip, 21-cat dataset. The two things I'd expect to actually help
+elimination argument now covers six independent tests (head tuning,
+augmentation, classifier family, backbone, class-imbalance techniques, and a
+denoised-audio comparison) — none moved `food` F1 meaningfully with the
+current 92-clip, 21-cat dataset. The two things I'd expect to actually help
 are (a) more `food` clips, ideally from more individual cats (more clips from
 the *same* 21 cats would help less, since the group-aware split would still
 only have ~15-17 cats' worth of `food` examples in any training fold), and (b)
-a fundamentally different representation that I haven't tried.
+a fundamentally different representation.
 
-**Fine-tuning (unfreezing part of a backbone) remains the strongest untried
-lever**, called out explicitly in both `classifier_comparison_summary.md` and
-`ast_summary.md`. Everything in this report used **frozen** backbones; letting
+**Fine-tuning (unfreezing part of a backbone) is now the only "obvious" lever
+not yet tried.** Everything in this report used **frozen** backbones; letting
 at least the top layers of MobileNetV2 or AST adapt to log-mel
-spectrograms/animal audio specifically - rather than natural photos or generic
-AudioSet content - is the one "obvious" lever not yet tried. For AST
-specifically, **LoRA/PEFT-style lightweight fine-tuning** is worth
-investigating as a way to adapt the transformer without the instability/
-overfitting risk of full fine-tuning on ~440 clips - but I want to flag this as
-an **unproven avenue**, not a guaranteed win; it's entirely possible it would
-also land within the noise band that everything else has landed in.
+spectrograms/animal audio specifically — rather than natural photos or generic
+AudioSet content — is the remaining candidate. For AST specifically,
+**LoRA/PEFT-style lightweight fine-tuning** is worth investigating as a way to
+adapt the transformer without the instability/overfitting risk of full
+fine-tuning on ~440 clips - but I want to flag this as an **unproven avenue**,
+not a guaranteed win; it's entirely possible it would also land within the
+noise band that everything else has landed in.
 
 **A larger dataset, or a stricter dog split, would tighten the error bars.**
 The dog numbers carry one open caveat (no speaker ID, section 3) that a future
@@ -776,16 +880,6 @@ does for cat. More cats (or more clips per existing cat, though with
 diminishing returns per the group-CV argument above) would shrink the large
 `food`-class standard deviations (0.09-0.21) that make it hard to tell signal
 from noise in the first place.
-
-**Evaluating the effect of denoising is a concrete, low-risk next step.** A
-teammate built an audio-cleaning pipeline (`noisereduce`-based) and reorganized
-the raw audio into cleaned/uncleaned folders per class. I have not evaluated
-whether training on the denoised audio changes any of the numbers in this
-report - it would be a direct, apples-to-apples re-run of the existing
-pipeline (same splits, same CV protocol, same backbones) on the cleaned data,
-which could plausibly help most where SNR is worst (cat clips are short and,
-per `cat_eda_summary.md`, the dataset includes some clips with significant
-background noise).
 
 ## 10. Conclusion
 
@@ -802,15 +896,17 @@ dog side where that guarantee isn't possible, a proof that the normalization
 step doesn't leak information across folds, and a discipline of touching the
 test set exactly once per session and judging every change against its
 standard deviation rather than its raw delta. That discipline is what let me
-say, with some confidence, that four very different interventions (head
-tuning, augmentation, classifier family, and an entirely different audio
-backbone) all plateaued at the same level - a conclusion I would not trust if
-any of those four results had come from a single noisy train/test split.
+say, with some confidence, that six very different interventions — head
+tuning, data augmentation, classifier family, an entirely different audio
+backbone, class-imbalance techniques (focal loss and SMOTE), and a denoised-
+audio comparison — all returned "no significant change" at the same level — a
+conclusion I would not trust if any of those results had come from a single
+noisy train/test split.
 
 The **dog model is solid** (CV macro-F1 ~0.82-0.85, `grunt` essentially
 perfect) and ready to use. The **cat model is honestly limited**: `isolation`
 and `brushing` are usable, but `food` (CV F1 ~0.31-0.40, test F1 ~0.20-0.31) is
-not, and I've shown - by elimination across four different levers - that this
+not, and I've shown - by elimination across six independent tests - that this
 looks like a property of the 92-clip `food` class itself, not of any model
 choice I made. Rather than hide that, the production interface (`predict()`,
 section 8) surfaces the full probability distribution and an `"uncertain"`

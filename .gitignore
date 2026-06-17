@@ -5,7 +5,12 @@ dataset_nettoye/
 backend/audio/data/
 
 # --- Modèles entraînés ---
-training/classification/models/*.keras
+# Ignore ALL model files by default; only the 4 production files are allowed below.
+training/classification/models/*
+!training/classification/models/production_dog_mobilenet_head.keras
+!training/classification/models/production_cat_mobilenet_head.keras
+!training/classification/models/production_dog_meta.json
+!training/classification/models/production_cat_meta.json
 training/classification/models/*.h5
 *.h5
 *.pt

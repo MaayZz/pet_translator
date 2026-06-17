@@ -23,9 +23,34 @@ result = predict("path/to/clip.wav", animal="cat", threshold=0.6)
 - `threshold` (optional): confidence threshold below which the result becomes
   `"uncertain"` (see below). Defaults to `0.50` if not given.
 
-Before calling `predict()` for the first time, run
-`python src/train_production.py` once (CPU, a few seconds) to generate the
-production model files under `models/` (gitignored, not committed).
+The production model files are **versioned in the repository** — no need to
+run `train_production.py` yourself. After cloning/pulling, you will find them
+at:
+
+```
+training/classification/models/production_dog_mobilenet_head.keras   (~986 KB)
+training/classification/models/production_cat_mobilenet_head.keras   (~986 KB)
+training/classification/models/production_dog_meta.json
+training/classification/models/production_cat_meta.json
+```
+
+`src/predict.py` loads these files automatically. The `*_meta.json` files
+contain all the preprocessing parameters the model was trained with — do not
+hardcode durations, sample rates, or normalization values separately; read
+them from the JSON:
+
+```python
+# Key fields in production_<animal>_meta.json
+{
+  "classes":          [...],   # class names in label-index order
+  "duration_s":       4.0,     # fixed clip duration (dog=4s, cat=2s)
+  "sample_rate":      16000,
+  "logmel_norm_mean": ...,     # real train-set mean — NOT a round placeholder
+  "logmel_norm_std":  ...,     # real train-set std
+  "img_size":         96,
+  "default_threshold": 0.5
+}
+```
 
 ## Exact return format
 
@@ -99,10 +124,11 @@ unsure) the model actually is.
   be reasonably confident.
 - **Cat**: `isolation` is reliable (F1 ~0.84) and `brushing` is reasonable,
   but `food` is weak (F1 ~0.30-0.37). This isn't a bug to be fixed later - I
-  tried four different things to improve it (head tuning, data augmentation,
-  five different classifiers, and a completely different audio backbone) and
-  all of them plateaued at the same ceiling, which points at the "food" class
-  itself being too small and varied (92/440 clips) rather than at the model.
+  tried six independent things to improve it (head tuning, data augmentation,
+  five different classifiers, a completely different audio backbone, focal
+  loss + SMOTE, and training on denoised audio) and all of them plateaued at
+  the same ceiling, which points at the "food" class itself being too small
+  and varied (92/440 clips) rather than at the model.
   **For cat, especially around `food`/`brushing`, keep the generated tone
   playful and a bit cautious/hedging rather than confidently assertive** - the
   threshold + probabilities are there precisely so the app doesn't have to

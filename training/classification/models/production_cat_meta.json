@@ -1,15 +1,19 @@
 {
   "animal": "cat",
-  "classes": ["brushing", "food", "isolation"],
+  "classes": [
+    "brushing",
+    "food",
+    "isolation"
+  ],
   "duration_s": 2.0,
   "sample_rate": 16000,
   "backbone": "mobilenet_v2",
   "img_size": 96,
-  "logmel_norm_mean": -10.0,
-  "logmel_norm_std": 8.0,
+  "logmel_norm_mean": -53.24827575683594,
+  "logmel_norm_std": 19.283716201782227,
   "default_threshold": 0.5,
-  "n_fit": 85,
-  "n_early_stop_val": 15,
+  "n_fit": 317,
+  "n_early_stop_val": 56,
   "epochs_run": 10,
   "seed": 42
 }
