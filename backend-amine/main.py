@@ -22,6 +22,7 @@ llm = PetTranslatorLLM()
 class TranslateRequest(BaseModel):
     category: str
     confidence: float
+    probabilities: dict = None
     pet_type: str = "cat"
     history: list = []
 
@@ -38,7 +39,12 @@ def ping():
 @app.post("/translate", response_model=TranslateResponse)
 def translate(req: TranslateRequest):
     personality = DEFAULT_PERSONALITY.get(req.pet_type, "haughty_cat")
-    text = llm.translate(intent_category=req.category, personality=personality)
+    text = llm.translate(
+        intent_category=req.category, 
+        personality=personality,
+        confidence=req.confidence,
+        probabilities=req.probabilities
+    )
     now = datetime.now().isoformat()
     entry = {
         "text": text,

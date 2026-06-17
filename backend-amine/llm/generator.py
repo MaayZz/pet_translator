@@ -64,11 +64,11 @@ class PetTranslatorLLM:
         except Exception as e:
             print(f"Failed to load model: {e}. Using mock responses.")
 
-    def translate(self, intent_category, personality="excited_dog", env_context=None):
+    def translate(self, intent_category, personality="excited_dog", env_context=None, confidence=None, probabilities=None):
         if self.llm is not None:
             try:
                 system_prompt = get_system_prompt(personality)
-                user_prompt = build_user_prompt(intent_category, None, env_context)
+                user_prompt = build_user_prompt(intent_category, None, env_context, confidence, probabilities)
                 response = self.llm.create_chat_completion(
                     messages=[
                         {"role": "system", "content": system_prompt},
