@@ -12,6 +12,9 @@ tensorflow>=2.16.0
 tensorflow-hub>=0.16.0
 setuptools<81  # tensorflow-hub 0.16.1 still imports pkg_resources, removed in setuptools>=82
 
+# Class imbalance experiments
+imbalanced-learn>=0.12.0
+
 # Transfer learning (AST - Audio Spectrogram Transformer, run on Colab GPU)
 torch>=2.1.0
 torchaudio>=2.1.0
