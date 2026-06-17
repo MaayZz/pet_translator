@@ -5,7 +5,8 @@ dataset_nettoye/
 backend/audio/data/
 
 # --- Modèles entraînés ---
-training/classification/models/
+training/classification/models/*.keras
+training/classification/models/*.h5
 *.h5
 *.pt
 *.pth

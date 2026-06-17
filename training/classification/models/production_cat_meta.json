@@ -1,0 +1,15 @@
+{
+  "animal": "cat",
+  "classes": ["brushing", "food", "isolation"],
+  "duration_s": 2.0,
+  "sample_rate": 16000,
+  "backbone": "mobilenet_v2",
+  "img_size": 96,
+  "logmel_norm_mean": -10.0,
+  "logmel_norm_std": 8.0,
+  "default_threshold": 0.5,
+  "n_fit": 85,
+  "n_early_stop_val": 15,
+  "epochs_run": 10,
+  "seed": 42
+}

@@ -5,7 +5,7 @@ let model = null;
 export async function loadModel() {
   try {
     const tf = await import("@tensorflow/tfjs");
-    model = await tf.loadGraphModel("/model/model.json");
+    model = await tf.loadLayersModel("/model/model.json");
     console.log("Model loaded from /model/model.json");
   } catch {
     console.log("No model found at /model/model.json, using mock classifier");
@@ -23,7 +23,8 @@ export async function classifyAudio(audioBlob) {
       const resampled = resample(channelData, audioBuffer.sampleRate, 16000);
       const spectrogram = computeMelSpectrogram(resampled, 16000);
       const input = tf.tensor(spectrogram).expandDims(0).expandDims(-1);
-      const output = model.predict(input);
+      const resized = tf.image.resizeBilinear(input, [128, 128]);
+      const output = model.predict(resized);
       const probs = await output.data();
       const maxIdx = probs.indexOf(Math.max(...probs));
       const categories = await getCategories();
