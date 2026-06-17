@@ -2,8 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
-from llm.generator import generate_response
-from llm.prompt import build_prompt
+from llm.generator import PetTranslatorLLM
 
 app = FastAPI(title="Pet Translator API")
 
@@ -17,7 +16,8 @@ app.add_middleware(
 
 history_store = []
 
-DEFAULT_PERSONALITY = {"cat": "cat_snobbish", "dog": "dog_excited"}
+DEFAULT_PERSONALITY = {"cat": "haughty_cat", "dog": "excited_dog"}
+llm = PetTranslatorLLM()
 
 class TranslateRequest(BaseModel):
     category: str
@@ -37,15 +37,8 @@ def ping():
 
 @app.post("/translate", response_model=TranslateResponse)
 def translate(req: TranslateRequest):
-    personality = DEFAULT_PERSONALITY.get(req.pet_type, "cat_snobbish")
-    prompt = build_prompt(
-        category=req.category,
-        confidence=req.confidence,
-        pet_type=req.pet_type,
-        personality=personality,
-        history=req.history,
-    )
-    text = generate_response(prompt)
+    personality = DEFAULT_PERSONALITY.get(req.pet_type, "haughty_cat")
+    text = llm.translate(intent_category=req.category, personality=personality)
     now = datetime.now().isoformat()
     entry = {
         "text": text,

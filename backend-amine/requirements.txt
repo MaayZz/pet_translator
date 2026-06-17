@@ -1,3 +1,15 @@
 fastapi>=0.110.0
 uvicorn>=0.28.0
 pydantic>=2.0.0
+
+# LLM inference (install when GGUF model is available)
+# llama-cpp-python>=0.2.56
+
+# RAG (optional - for behavioral context retrieval)
+# langchain>=0.1.13
+# langchain-community>=0.0.29
+# langchain-chroma>=0.1.0
+# langchain-huggingface>=0.0.1
+# sentence-transformers>=2.5.1
+# pypdf>=4.1.0
+# chromadb>=0.4.24

@@ -1,17 +1,12 @@
-"""
-LLM text generator.
-
-When the fine-tuned Llama model is ready, this module will load the GGUF file
-via llama-cpp-python and generate responses.
-
-For now, it returns mock responses so the frontend can be developed independently.
-"""
-
+import os
 import random
+from .prompt import get_system_prompt, build_user_prompt
+
+MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "unsloth.Q4_K_M.gguf")
 
 MOCK_RESPONSES = {
     "cat": {
-        "cat_snobbish": {
+        "haughty_cat": {
             "hunger": "Finally, you decide to feed your king.",
             "play": "That piece of string moves. Interesting.",
             "attention": "You may pet me, I grant you this favor.",
@@ -19,15 +14,7 @@ MOCK_RESPONSES = {
             "pain": "Something is wrong in my domain.",
             "content": "You have my favor for today.",
         },
-        "cat_timid": {
-            "hunger": "Um... sorry... could I have some food?",
-            "play": "If you want to play... that's okay...",
-            "attention": "You're here... I'm happy...",
-            "fear": "I heard a noise... I'm scared...",
-            "pain": "It hurts... I don't know what to do...",
-            "content": "I'm cozy right here... nice and soft...",
-        },
-        "cat_grumpy": {
+        "grumpy_cat": {
             "hunger": "Late for my meal again. Pathetic.",
             "play": "You want to play? You have 30 seconds.",
             "attention": "What now? Hurry up.",
@@ -37,7 +24,7 @@ MOCK_RESPONSES = {
         },
     },
     "dog": {
-        "dog_excited": {
+        "excited_dog": {
             "hunger": "FOOD! FOOD! YES YES YES!",
             "play": "PLAY WITH ME! Ball ball ball ball!",
             "attention": "LOOK AT ME! I'm HERE!",
@@ -45,15 +32,7 @@ MOCK_RESPONSES = {
             "pain": "Ouch ouch ouch... that hurts...",
             "content": "I love you. You're the best. Life is beautiful.",
         },
-        "dog_playful": {
-            "hunger": "A snack? To play after? Yes?",
-            "play": "Another ball? Again? PLEASE!",
-            "attention": "Hey hey hey! Did you see me? I did something cool!",
-            "fear": "What's that noise? Should we check? Together?",
-            "pain": "I hurt myself while playing...",
-            "content": "Everything is good when we're together!",
-        },
-        "dog_gentle": {
+        "shy_dog": {
             "hunger": "I'd love a little food, if you have time.",
             "play": "I'd like to play with you, gently.",
             "attention": "I'm here, next to you. I love you.",
@@ -64,31 +43,52 @@ MOCK_RESPONSES = {
     },
 }
 
-def generate_response(prompt: str) -> str:
-    try:
-        from llama_cpp import Llama
-        llm = Llama(model_path="models/llama.gguf")
-        output = llm(
-            prompt,
-            max_tokens=30,
-            temperature=0.8,
-            stop=["\n", ".", "!"],
-        )
-        return output["choices"][0]["text"].strip()
-    except (ImportError, FileNotFoundError, Exception):
-        pass
+class PetTranslatorLLM:
+    def __init__(self):
+        self.llm = None
+        self._load_model()
 
-    return _mock_response(prompt)
+    def _load_model(self):
+        if not os.path.exists(MODEL_PATH):
+            print(f"Warning: Model not found at {MODEL_PATH}. Using mock responses.")
+            return
+        try:
+            from llama_cpp import Llama
+            print("Loading GGUF Llama model...")
+            self.llm = Llama(
+                model_path=MODEL_PATH,
+                n_ctx=2048,
+                n_gpu_layers=-1,
+            )
+            print("Model loaded successfully.")
+        except Exception as e:
+            print(f"Failed to load model: {e}. Using mock responses.")
 
-def _mock_response(prompt: str) -> str:
-    is_dog = "dog" in prompt
-    pet_key = "dog" if is_dog else "cat"
-    responses = MOCK_RESPONSES.get(pet_key, {})
-    category_map = {"hungry": "hunger", "play": "play", "attention": "attention",
-                    "scared": "fear", "pain": "pain", "happy": "content", "relaxed": "content"}
-    for word, cat_key in category_map.items():
-        if word in prompt:
-            for personality_key, categories in responses.items():
-                if cat_key in categories:
-                    return categories[cat_key]
-    return "Woof."
+    def translate(self, intent_category, personality="excited_dog", env_context=None):
+        if self.llm is not None:
+            try:
+                system_prompt = get_system_prompt(personality)
+                user_prompt = build_user_prompt(intent_category, None, env_context)
+                response = self.llm.create_chat_completion(
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    max_tokens=60,
+                    temperature=0.7,
+                )
+                return response["choices"][0]["message"]["content"]
+            except Exception as e:
+                print(f"LLM inference failed: {e}")
+
+        return self._mock_response(intent_category, personality)
+
+    def _mock_response(self, intent_category, personality):
+        pet_key = "dog" if "dog" in personality else "cat"
+        responses = MOCK_RESPONSES.get(pet_key, {})
+        categories = responses.get(personality, {})
+        if intent_category in categories:
+            return categories[intent_category]
+        for cat in categories.values():
+            return cat
+        return "Woof."
