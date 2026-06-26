@@ -2,9 +2,14 @@ import { useEffect, useRef } from "react";
 
 const PET_EMOJIS = { cat: "🐱", dog: "🐶" };
 const EMOTION_EMOJIS = {
-  hunger: "🍽️", play: "🎾", attention: "👀",
-  fear: "😰", pain: "💔", content: "😊",
+  bark: "🔊", growl: "😠", grunt: "😤",
+  brushing: "🪥", food: "🍽️", isolation: "😿",
+  uncertain: "🤔",
 };
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 export default function ChatUI({ messages }) {
   const bottomRef = useRef(null);
@@ -29,7 +34,8 @@ export default function ChatUI({ messages }) {
             <div className="message-bubble">
               <div className="message-text">{msg.text}</div>
               <div className="message-footer">
-                <span>{EMOTION_EMOJIS[msg.emotion]} {msg.emotion}</span>
+                <span>{EMOTION_EMOJIS[msg.emotion] || "🐾"} {capitalize(msg.emotion)}</span>
+                <span className="confidence-badge">{(msg.confidence * 100).toFixed(0)}%</span>
                 <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
             </div>

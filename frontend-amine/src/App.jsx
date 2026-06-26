@@ -66,16 +66,17 @@ function App() {
 
   const handleAudioCaptured = useCallback(async (audioBlob) => {
     setLoading(true);
-    const result = await classifyAudio(audioBlob);
+    const result = await classifyAudio(audioBlob, petType);
     const response = await translate({
-      category: result.category,
+      animal: result.animal,
+      label: result.label,
       confidence: result.confidence,
-      petType,
+      probabilities: result.probabilities,
       history: messages,
     });
     setMessages((prev) => [
       ...prev,
-      { role: "pet", text: response.text, emotion: response.emotion, confidence: response.confidence, timestamp: response.timestamp || new Date().toISOString(), petType },
+      { role: "pet", text: response.text, emotion: response.emotion || result.label, confidence: response.confidence, timestamp: response.timestamp || new Date().toISOString(), petType: result.animal },
     ]);
     setLoading(false);
   }, [petType, messages]);

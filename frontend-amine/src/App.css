@@ -141,9 +141,9 @@ code, .tech-code {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 48px 40px;
-  gap: 28px;
-  overflow: hidden;
+  padding: 24px 32px;
+  gap: 16px;
+  overflow-y: auto;
   background: var(--panel-bg);
 }
 
@@ -153,10 +153,10 @@ code, .tech-code {
 }
 
 .panel-header h1 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.5px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -165,21 +165,21 @@ code, .tech-code {
 
 .badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #b0bcff;
   background: rgba(138, 150, 255, 0.15);
-  padding: 5px 14px;
+  padding: 3px 10px;
   border-radius: 14px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   border: 1px solid rgba(138, 150, 255, 0.3);
 }
 
 .desc {
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 12px;
+  line-height: 1.5;
   color: var(--panel-text-secondary);
 }
 
@@ -189,12 +189,12 @@ code, .tech-code {
 }
 
 .panel-section h2 {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--panel-text-secondary);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   text-align: center;
 }
 
@@ -203,14 +203,14 @@ code, .tech-code {
 .stack-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .stack-item {
-  padding: 14px 18px;
+  padding: 8px 12px;
   background: var(--panel-surface);
   border: 1px solid var(--panel-border);
-  border-radius: 12px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   text-align: center;
 }
@@ -223,17 +223,17 @@ code, .tech-code {
 
 .stack-item strong {
   display: block;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--panel-text);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .stack-item p {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--panel-text-secondary);
-  line-height: 1.5;
-  margin-top: 6px;
+  line-height: 1.4;
+  margin-top: 3px;
 }
 
 /* ── Right Panel — Pipeline ── */
@@ -241,17 +241,17 @@ code, .tech-code {
 .pipeline {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .pipeline-step {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 18px;
+  gap: 10px;
+  padding: 6px 12px;
   background: var(--panel-surface);
   border: 1px solid var(--panel-border);
-  border-radius: 12px;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
@@ -271,14 +271,14 @@ code, .tech-code {
 }
 
 .pipeline-step strong {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--panel-text);
-  min-width: 120px;
+  min-width: 80px;
 }
 
 .pipeline-step span {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--panel-text-secondary);
 }
 
@@ -287,7 +287,32 @@ code, .tech-code {
 .team {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+}
+
+.team-member {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--panel-surface);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.team-member strong {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--panel-text);
+  white-space: nowrap;
+}
+
+.team-member span {
+  font-size: 10px;
+  color: var(--panel-text-secondary);
+  text-align: right;
 }
 
 .team-member {
@@ -327,17 +352,17 @@ code, .tech-code {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .exp-list li {
-  font-size: 12px;
-  padding: 10px 18px;
+  font-size: 10px;
+  padding: 6px 12px;
   background: var(--panel-surface);
   border: 1px solid var(--panel-border);
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--panel-text-secondary);
-  line-height: 1.5;
+  line-height: 1.4;
   text-align: center;
   transition: all 0.2s ease;
 }
@@ -349,6 +374,44 @@ code, .tech-code {
   background: #1e1e32;
 }
 
+/* ── Accuracy Cards ── */
+
+.accuracy-grid {
+  display: flex;
+  gap: 6px;
+}
+
+.accuracy-card {
+  flex: 1;
+  text-align: center;
+  padding: 8px 10px;
+  background: var(--panel-surface);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+}
+
+.accuracy-card strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--panel-text);
+  margin-bottom: 2px;
+}
+
+.acc-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.acc-detail {
+  display: block;
+  font-size: 9px;
+  color: var(--panel-text-secondary);
+  margin-top: 2px;
+}
+
 /* ── Phone Section ── */
 
 .phone-section {
@@ -356,7 +419,7 @@ code, .tech-code {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 12px;
   background: linear-gradient(135deg, #0a0a0f, #141420, #0a0a0f);
 }
 
@@ -581,10 +644,20 @@ code, .tech-code {
   justify-content: flex-end;
   align-items: center;
   margin-top: 4px;
-  gap: 8px;
+  gap: 6px;
   font-size: 10px;
   color: var(--phone-text-secondary);
   font-weight: 500;
+}
+
+.confidence-badge {
+  background: var(--phone-accent);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 /* ── Easter Egg ── */

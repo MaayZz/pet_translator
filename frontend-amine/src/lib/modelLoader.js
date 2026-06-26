@@ -1,89 +1,275 @@
-const CATEGORIES = ["hunger", "play", "attention", "fear", "pain", "content"];
+const ANIMALS = ['dog', 'cat'];
+const CLASSES = {
+  dog: ['bark', 'growl', 'grunt'],
+  cat: ['brushing', 'food', 'isolation'],
+};
+const TARGET_LEN = { dog: 64000, cat: 32000 };
+const THRESHOLD = 0.5;
 
-let model = null;
+let mobilenet = null;
+let headModels = {};
 
 export async function loadModel() {
-  try {
-    const tf = await import("@tensorflow/tfjs");
-    model = await tf.loadLayersModel("/model/model.json");
-    console.log("Model loaded from /model/model.json");
-  } catch {
-    console.log("No model found at /model/model.json, using mock classifier");
-  }
-}
+  const tf = await import('@tensorflow/tfjs');
+  const mobilenetModule = await import('@tensorflow-models/mobilenet');
 
-export async function classifyAudio(audioBlob) {
-  if (model) {
+  mobilenet = await mobilenetModule.load({ version: 2, alpha: 1.0 });
+  console.log('MobileNetV2 backbone loaded');
+
+  for (const animal of ANIMALS) {
     try {
-      const tf = await import("@tensorflow/tfjs");
-      const audioCtx = new AudioContext();
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      const channelData = audioBuffer.getChannelData(0);
-      const resampled = resample(channelData, audioBuffer.sampleRate, 16000);
-      const spectrogram = computeMelSpectrogram(resampled, 16000);
-      const input = tf.tensor(spectrogram).expandDims(0).expandDims(-1);
-      const resized = tf.image.resizeBilinear(input, [128, 128]);
-      const output = model.predict(resized);
-      const probs = await output.data();
-      const maxIdx = probs.indexOf(Math.max(...probs));
-      const categories = await getCategories();
-      return { category: categories[maxIdx], confidence: probs[maxIdx] };
-    } catch (err) {
-      console.error("Model inference failed:", err);
+      headModels[animal] = await loadHeadWeights(animal, tf);
+      console.log(`${animal} head weights loaded`);
+    } catch (e) {
+      console.warn(`${animal} head not found, will use mock:`, e);
     }
   }
-  const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-  const confidence = 0.75 + Math.random() * 0.2;
-  return { category, confidence: Math.round(confidence * 100) / 100 };
 }
 
-async function getCategories() {
-  try {
-    const res = await fetch("/model/metadata.json");
-    if (res.ok) {
-      const meta = await res.json();
-      return meta.categories || CATEGORIES;
-    }
-  } catch {}
-  return CATEGORIES;
+async function loadHeadWeights(animal, tf) {
+  const shapesRes = await fetch(`/model/${animal}/head_shapes.json`);
+  const shapes = await shapesRes.json();
+
+  const weightsRes = await fetch(`/model/${animal}/head_weights.bin`);
+  const weightsBuf = await weightsRes.arrayBuffer();
+  const weights = new Float32Array(weightsBuf);
+
+  let offset = 0;
+  const params = {};
+  for (const [name, shape] of Object.entries(shapes)) {
+    const size = shape.reduce((a, b) => a * b, 1);
+    params[name] = tf.tensor(weights.slice(offset, offset + size), shape);
+    offset += size;
+  }
+
+  return {
+    dense_kernel: params.dense_kernel,
+    dense_bias: params.dense_bias,
+    dense_1_kernel: params.dense_1_kernel,
+    dense_1_bias: params.dense_1_bias,
+  };
 }
 
-function resample(audio, fromRate, toRate) {
+function applyHead(embedding, head, tf) {
+  return tf.tidy(() => {
+    const h = tf.relu(tf.add(tf.matMul(embedding, head.dense_kernel), head.dense_bias));
+    return tf.add(tf.matMul(h, head.dense_1_kernel), head.dense_1_bias);
+  });
+}
+
+export async function classifyAudio(audioBlob, animal) {
+  if (!ANIMALS.includes(animal)) throw new Error(`Unknown animal: ${animal}`);
+
+  const tf = await import('@tensorflow/tfjs');
+
+  if (!mobilenet || !headModels[animal]) {
+    return mockClassify(audioBlob, animal);
+  }
+
+  const imgTensor = await preprocessAudio(audioBlob, animal, tf);
+  const embedding = mobilenet.infer(imgTensor, true);
+  const logits = applyHead(embedding, headModels[animal], tf);
+  const probsTensor = tf.softmax(logits);
+  const probs = await probsTensor.data();
+
+  tf.dispose([imgTensor, embedding, logits, probsTensor]);
+
+  const classes = CLASSES[animal];
+  const probsArray = Array.from(probs);
+  const maxProb = Math.max(...probsArray);
+  const topIdx = probsArray.indexOf(maxProb);
+  const confidence = Math.round(maxProb * 10000) / 10000;
+  const label = confidence >= THRESHOLD ? classes[topIdx] : 'uncertain';
+
+  return {
+    animal,
+    label,
+    confidence,
+    probabilities: Object.fromEntries(classes.map((c, i) => [c, Math.round(probsArray[i] * 10000) / 10000])),
+    threshold: THRESHOLD,
+  };
+}
+
+function resampleLinear(audio, fromRate, toRate) {
   if (fromRate === toRate) return audio;
   const ratio = toRate / fromRate;
-  const newLength = Math.round(audio.length * ratio);
-  const result = new Float32Array(newLength);
-  for (let i = 0; i < newLength; i++) {
+  const out = new Float32Array(Math.round(audio.length * ratio));
+  for (let i = 0; i < out.length; i++) {
     const pos = i / ratio;
     const idx = Math.floor(pos);
     const frac = pos - idx;
-    result[i] = idx + 1 < audio.length
+    out[i] = idx + 1 < audio.length
       ? audio[idx] * (1 - frac) + audio[idx + 1] * frac
       : audio[idx];
   }
-  return result;
+  return out;
 }
 
-function computeMelSpectrogram(audio, sampleRate) {
-  const frameSize = 1024;
-  const hopLength = 512;
-  const numFrames = Math.floor((audio.length - frameSize) / hopLength) + 1;
-  const spectrogram = [];
-  for (let i = 0; i < numFrames && i < 128; i++) {
-    const frame = audio.slice(i * hopLength, i * hopLength + frameSize);
-    const windowed = frame.map((s, j) => s * (0.54 - 0.46 * Math.cos((2 * Math.PI * j) / (frameSize - 1))));
-    const fft = [];
-    for (let k = 0; k < 128; k++) {
-      let re = 0, im = 0;
-      for (let n = 0; n < frameSize; n++) {
-        const angle = (2 * Math.PI * k * n) / frameSize;
-        re += windowed[n] * Math.cos(angle);
-        im -= windowed[n] * Math.sin(angle);
-      }
-      fft.push(Math.sqrt(re * re + im * im));
-    }
-    spectrogram.push(fft.map((v) => Math.log(v + 1)));
+function fixLength(audio, targetLen) {
+  if (audio.length >= targetLen) {
+    const start = Math.floor((audio.length - targetLen) / 2);
+    return audio.slice(start, start + targetLen);
   }
-  return spectrogram;
+  const out = new Float32Array(targetLen);
+  const padLeft = Math.floor((targetLen - audio.length) / 2);
+  out.set(audio, padLeft);
+  return out;
+}
+
+function hannWindow(size) {
+  const w = new Float32Array(size);
+  for (let i = 0; i < size; i++) {
+    w[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (size - 1)));
+  }
+  return w;
+}
+
+function melSpectrogram(audio, sampleRate) {
+  const nFft = 1024;
+  const hopLength = 512;
+  const nMels = 64;
+  const fMin = 0;
+  const fMax = sampleRate / 2;
+
+  const numFrames = Math.floor((audio.length - nFft) / hopLength) + 1;
+  const window = hannWindow(nFft);
+
+  const fftBins = nFft / 2 + 1;
+  const magSpectrogram = new Float32Array(numFrames * fftBins);
+
+  for (let t = 0; t < numFrames; t++) {
+    const offset = t * hopLength;
+    for (let k = 0; k < fftBins; k++) {
+      let re = 0, im = 0;
+      for (let n = 0; n < nFft; n++) {
+        const angle = (2 * Math.PI * k * n) / nFft;
+        const val = audio[offset + n] * window[n];
+        re += val * Math.cos(angle);
+        im -= val * Math.sin(angle);
+      }
+      magSpectrogram[t * fftBins + k] = Math.sqrt(re * re + im * im);
+    }
+  }
+
+  const melBasis = createMelFilterBank(sampleRate, nFft, nMels, fMin, fMax);
+  const melSpec = new Float32Array(numFrames * nMels);
+
+  for (let t = 0; t < numFrames; t++) {
+    for (let m = 0; m < nMels; m++) {
+      let sum = 0;
+      for (let k = 0; k < fftBins; k++) {
+        sum += magSpectrogram[t * fftBins + k] * melBasis[m * fftBins + k];
+      }
+      melSpec[t * nMels + m] = 10 * Math.log10(sum + 1e-10);
+    }
+  }
+
+  const nFrames = numFrames;
+  const transposed = new Float32Array(nMels * nFrames);
+  for (let t = 0; t < nFrames; t++) {
+    for (let m = 0; m < nMels; m++) {
+      transposed[m * nFrames + t] = melSpec[t * nMels + m];
+    }
+  }
+
+  return { mel: transposed, nFrames };
+}
+
+function createMelFilterBank(sampleRate, nFft, nMels, fMin, fMax) {
+  const fftBins = nFft / 2 + 1;
+  const melMin = 2595 * Math.log10(1 + fMin / 700);
+  const melMax = 2595 * Math.log10(1 + fMax / 700);
+  const melPoints = new Float32Array(nMels + 2);
+  for (let i = 0; i < nMels + 2; i++) {
+    melPoints[i] = fMin + (fMax - fMin) * i / (nMels + 1);
+  }
+  const hzPoints = melPoints;
+  const bin = new Float32Array(nMels + 2);
+  for (let i = 0; i < nMels + 2; i++) {
+    bin[i] = Math.floor((nFft + 1) * hzPoints[i] / sampleRate);
+  }
+
+  const basis = new Float32Array(nMels * fftBins);
+  for (let m = 0; m < nMels; m++) {
+    const fLeft = bin[m];
+    const fCenter = bin[m + 1];
+    const fRight = bin[m + 2];
+    for (let k = fLeft; k <= fCenter; k++) {
+      basis[m * fftBins + k] = (k - fLeft) / (fCenter - fLeft + 1e-10);
+    }
+    for (let k = fCenter; k <= fRight; k++) {
+      basis[m * fftBins + k] = (fRight - k) / (fRight - fCenter + 1e-10);
+    }
+  }
+  return basis;
+}
+
+async function preprocessAudio(audioBlob, animal, tf) {
+  const audioCtx = new AudioContext({ sampleRate: 16000 });
+  const arrayBuffer = await audioBlob.arrayBuffer();
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+  let samples = audioBuffer.getChannelData(0);
+  samples = resampleLinear(samples, audioBuffer.sampleRate, 16000);
+  samples = fixLength(samples, TARGET_LEN[animal]);
+
+  const { mel, nFrames } = melSpectrogram(samples, 16000);
+  const nMels = 64;
+
+  let minVal = Infinity, maxVal = -Infinity;
+  for (const v of mel) {
+    if (v < minVal) minVal = v;
+    if (v > maxVal) maxVal = v;
+  }
+  const range = maxVal - minVal + 1e-8;
+  const scaled = mel.map(v => (v - minVal) / range);
+
+  const rgb = new Float32Array(nMels * nFrames * 3);
+  for (let i = 0; i < nMels * nFrames; i++) {
+    rgb[i * 3] = scaled[i];
+    rgb[i * 3 + 1] = scaled[i];
+    rgb[i * 3 + 2] = scaled[i];
+  }
+
+  let imgTensor = tf.tensor3d(rgb, [nMels, nFrames, 3]);
+  imgTensor = tf.image.resizeBilinear(imgTensor.expandDims(0), [96, 96]);
+  imgTensor = imgTensor.mul(255.0);
+  imgTensor = imgTensor.squeeze([0]);
+
+  return imgTensor;
+}
+
+function simpleHash(buf) {
+  let h = 5381;
+  for (let i = 0; i < buf.length && i < 4096; i += 64) {
+    h = ((h << 5) + h + buf[i]) | 0;
+  }
+  return Math.abs(h);
+}
+
+function mockClassify(audioBlob, animal) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const buf = new Uint8Array(reader.result);
+      const hash = simpleHash(buf);
+      const classes = CLASSES[animal];
+      const idx = hash % classes.length;
+      const probs = classes.map((c, i) => {
+        if (i === idx) return 0.82 + (hash % 15) / 100;
+        return 0.04 + ((hash + i * 37) % 8) / 100;
+      });
+      const sum = probs.reduce((a, b) => a + b, 0);
+      const normalized = probs.map(p => Math.round((p / sum) * 10000) / 10000);
+      const confidence = normalized[idx];
+      const label = confidence >= THRESHOLD ? classes[idx] : 'uncertain';
+      resolve({
+        animal,
+        label,
+        confidence,
+        probabilities: Object.fromEntries(classes.map((c, i) => [c, normalized[i]])),
+        threshold: THRESHOLD,
+      });
+    };
+    reader.readAsArrayBuffer(audioBlob);
+  });
 }

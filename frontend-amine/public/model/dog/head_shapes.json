@@ -1,0 +1,16 @@
+{
+  "dense_kernel": [
+    1280,
+    64
+  ],
+  "dense_bias": [
+    64
+  ],
+  "dense_1_kernel": [
+    64,
+    3
+  ],
+  "dense_1_bias": [
+    3
+  ]
+}

@@ -4,31 +4,56 @@ from .prompt import get_system_prompt, build_user_prompt
 
 MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "unsloth.Q4_K_M.gguf")
 
-MOCK_RESPONSES = {
+INTENT_DESCRIPTIONS = {
+    "dog": {
+        "bark": "the dog is barking loudly — urgent, alerting, or excited",
+        "growl": "the dog is growling — warning, discomfort, or threat",
+        "grunt": "the dog is grunting — mild annoyance or contentment",
+        "uncertain": "the pet made an unclear sound — best guess with caution",
+    },
     "cat": {
-        "haughty_cat": {
-            "food": "Finally, you decide to feed your king.",
-            "brushing": "You may pet me, I grant you this favor.",
-            "isolation": "There is an intruder in my kingdom.",
+        "brushing": "the cat is enjoying being brushed — pleasure, trust",
+        "food": "the cat is meowing for food — hunger, impatience",
+        "isolation": "the cat is crying from being alone — distress, loneliness",
+        "uncertain": "the pet made an unclear sound — best guess with caution",
+    },
+}
+
+MOCK_RESPONSES = {
+    "dog": {
+        "bark": {
+            "excited_dog": "WOOF WOOF! Something's happening! Let's go!",
+            "shy_dog": "Um, there's something... I think we should check?",
         },
-        "grumpy_cat": {
-            "food": "Late for my meal again. Pathetic.",
-            "brushing": "You want to pet me? You have 3 seconds.",
-            "isolation": "Silence. I'm sleeping. Finally.",
+        "growl": {
+            "excited_dog": "Grrr... stay back! I don't like this!",
+            "shy_dog": "Please... stay away from me...",
+        },
+        "grunt": {
+            "excited_dog": "Hmph. Fine. Whatever. Are we playing or not?",
+            "shy_dog": "I'm okay. Just resting.",
+        },
+        "uncertain": {
+            "excited_dog": "I'm trying to tell you something important!",
+            "shy_dog": "I... I have something to say... maybe...",
         },
     },
-    "dog": {
-        "excited_dog": {
-            "food": "FOOD! FOOD! YES YES YES!",
-            "bark": "PLAY WITH ME! Ball ball ball ball!",
-            "growl": "LOOK AT ME! I'm HERE!",
-            "grunt": "Ouch ouch ouch... that hurts...",
+    "cat": {
+        "brushing": {
+            "haughty_cat": "Mmm. You may continue. I shall allow it.",
+            "grumpy_cat": "Fine. But don't think this means I like you.",
         },
-        "shy_dog": {
-            "food": "I'd love a little food, if you have time.",
-            "bark": "I'd like to play with you, gently.",
-            "growl": "I'm a bit scared. Will you protect me?",
-            "grunt": "I don't feel well. Stay with me.",
+        "food": {
+            "haughty_cat": "My bowl is empty. This is an outrage.",
+            "grumpy_cat": "Food. Now. Don't make me repeat myself.",
+        },
+        "isolation": {
+            "haughty_cat": "You left me alone? How dare you.",
+            "grumpy_cat": "Where is everyone? This is unacceptable.",
+        },
+        "uncertain": {
+            "haughty_cat": "I expect you to understand what I want.",
+            "grumpy_cat": "Figure it out. I'm not explaining myself.",
         },
     },
 }
@@ -57,7 +82,7 @@ class PetTranslatorLLM:
         except Exception as e:
             print(f"Failed to load model: {e}. Using mock responses.")
 
-    def translate(self, intent_category, personality="excited_dog", env_context=None, confidence=None, probabilities=None):
+    def translate(self, intent_category, personality="excited_dog", env_context=None, confidence=None, probabilities=None, intent_label=None):
         if self.llm is not None:
             try:
                 system_prompt = get_system_prompt(personality)
@@ -75,14 +100,15 @@ class PetTranslatorLLM:
             except Exception as e:
                 print(f"LLM inference failed: {e}")
 
-        return self._mock_response(intent_category, personality)
+        return self._mock_response(intent_label or intent_category, personality)
 
     def _mock_response(self, intent_category, personality):
         pet_key = "dog" if "dog" in personality else "cat"
-        responses = MOCK_RESPONSES.get(pet_key, {})
-        categories = responses.get(personality, {})
-        if intent_category in categories:
-            return categories[intent_category]
-        for cat in categories.values():
-            return cat
+        pet_mock = MOCK_RESPONSES.get(pet_key, {})
+        intent_mock = pet_mock.get(intent_category, {})
+        if intent_mock:
+            return intent_mock.get(personality, list(intent_mock.values())[0])
+        for v in pet_mock.values():
+            if personality in v:
+                return v[personality]
         return "Woof."

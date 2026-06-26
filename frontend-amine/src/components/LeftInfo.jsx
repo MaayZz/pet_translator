@@ -1,9 +1,34 @@
-const STACK = [
-  { name: "Audio Processing", tech: "librosa / denoise / VAD", desc: "Noise reduction, voice activity detection, MFCC & mel-spectrogram extraction" },
-  { name: "Classification", tech: "MobileNetV2 -> TFJS", desc: "Fine-tuned on pet vocalizations — 6 categories: hunger, play, attention, fear, pain, content" },
-  { name: "Large Language Model", tech: "Llama 3.2 1B (LoRA)", desc: "Fine-tuned via unsloth on 5K+ synthetic pet phrases. Runs on llama.cpp" },
-  { name: "Backend API", tech: "FastAPI + llama.cpp", desc: "REST API for LLM inference, conversation history storage, CORS-enabled" },
-  { name: "Frontend", tech: "React + Vite + TFJS", desc: "In-browser audio capture, real-time classification via TensorFlow.js" },
+const RESEARCH_HIGHLIGHTS = [
+  {
+    name: "Dataset",
+    tech: "350+ labeled pet vocalizations",
+    desc: "Dog: 62 bark, 60 growl, 48 grunt — Cat: 85 brushing, 56 food, 48 isolation. Split train/val/test (70/15/15).",
+  },
+  {
+    name: "Features",
+    tech: "Log-mel spectrograms (64 bands)",
+    desc: "16 kHz mono -> center crop (4s dog / 2s cat) -> Hann window (1024) -> 64 mel bands -> 10*log10(power) -> per-sample min-max -> 3-channel image -> resize 96x96.",
+  },
+  {
+    name: "Backbone",
+    tech: "MobileNetV2 (frozen, ImageNet)",
+    desc: "GlobalAveragePooling -> 1280-d embedding. Fully convolutional — accepts 96x96 input. Same backbone for both species; only the head is per-animal.",
+  },
+  {
+    name: "Classification Head",
+    tech: "Dense(64, ReLU) -> Dense(3, Softmax)",
+    desc: "Dog classes: bark, growl, grunt — Cat classes: brushing, food, isolation. Confidence threshold: 0.50 (below = uncertain).",
+  },
+  {
+    name: "LLM",
+    tech: "Llama 3.2 1B (LoRA, unsloth)",
+    desc: "Fine-tuned on 5K+ synthetic pet phrases. 4 personalities (haughty_cat, grumpy_cat, excited_dog, shy_dog). Falls back to mock if GGUF unavailable.",
+  },
+  {
+    name: "Deployment",
+    tech: "TFJS in-browser + FastAPI",
+    desc: "Backbone via @tensorflow-models/mobilenet; trained head weights extracted as .bin (1280->64->3). Inference runs entirely in the browser.",
+  },
 ];
 
 export default function LeftInfo() {
@@ -18,9 +43,9 @@ export default function LeftInfo() {
       </div>
 
       <div className="panel-section">
-        <h2>Tech Stack</h2>
+        <h2>Research Architecture</h2>
         <div className="stack-list">
-          {STACK.map((s, i) => (
+          {RESEARCH_HIGHLIGHTS.map((s, i) => (
             <div key={i} className="stack-item">
               <strong>{s.name}</strong>
               <span className="tech-code">{s.tech}</span>
