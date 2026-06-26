@@ -21,7 +21,7 @@
 **Mohamed:** In a real-world scenario, a pet's environment is noisy. A microphone will pick up laptop fans, street noise, and human voices. My role was to build a robust audio processing pipeline in Python. First, I implemented ambient noise reduction using the `noisereduce` library, and then isolated the actual animal vocalization using Voice Activity Detection (WebrtcVAD). 
 
 **[Slide 5: Feature Extraction (Mel-Spectrograms)]**
-**Mohamed:** But machine learning models don't read audio waves; they read images. Using `librosa`, I converted the cleaned audio into Mel-spectrograms. We pad or crop the audio to a fixed length—4 seconds for dogs, 2 seconds for cats—and apply logarithmic scaling to the Mel frequencies. These spectrograms are essentially visual fingerprints of the sounds, ready to be fed into a neural network. And to explain how that neural network works, here is Anas."
+**Mohamed:** But machine learning models don't read audio waves; they read images. Using `librosa`, I converted the cleaned audio into Mel-spectrograms. To do this, we had to standardize the audio lengths. Fun fact: we noticed that while almost all the audio files were just a few seconds long, there was one massive outlier that lasted for exactly 1 minute and 7 seconds! That single file completely messed up some of our initial calculations before we realized what was happening. We eventually fixed it by forcing a strict fixed length—4 seconds for dogs, 2 seconds for cats—and applying logarithmic scaling to the Mel frequencies. These spectrograms are essentially visual fingerprints of the sounds. Now, to explain how the neural network reads those fingerprints, here is Anas."
 
 ---
 
