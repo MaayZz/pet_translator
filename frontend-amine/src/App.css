@@ -659,9 +659,30 @@ code, .tech-code {
 }
 
 @media (max-width: 1024px) {
-  .app-layout { flex-direction: column; height: auto; overflow: auto; }
+  .app-layout { flex-direction: column; height: 100vh; overflow-y: auto; }
   .side-panel { padding: 24px 20px; }
   .side-panel.left .stack-list { max-width: 100%; }
-  .phone-section { padding: 16px; }
-  .phone-screen { width: 100%; max-width: 380px; height: 650px; }
+  .phone-section { padding: 20px; flex-shrink: 0; }
+  .phone-screen { width: 100%; max-width: 400px; height: 80vh; margin: 0 auto; }
+}
+
+@media (max-width: 768px) {
+  body, html { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+  .app-layout { display: block; height: 100vh; width: 100vw; overflow: hidden; }
+  .side-panel { display: none !important; }
+  .phone-section { 
+    padding: 0; 
+    height: 100vh; 
+    width: 100vw; 
+    display: flex; 
+    background: var(--phone-bg);
+  }
+  .phone-screen { 
+    width: 100%; 
+    max-width: 100%; 
+    height: 100vh; 
+    border-radius: 0; 
+    box-shadow: none; 
+    margin: 0;
+  }
 }

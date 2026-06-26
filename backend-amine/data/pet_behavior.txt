@@ -1,0 +1,11 @@
+# PET BEHAVIORAL KNOWLEDGE BASE
+
+## Cats
+Food Meow (food): A short, high-pitched, and demanding meow often repeated near feeding time. This indicates hunger, anticipation, or a request for food. Cats know exactly how to manipulate human schedules for their meals.
+Isolation Meow (isolation): A long, drawn-out, and sometimes distressed wail. This occurs when a cat feels lonely, separated from its owner, or trapped in a room. It translates to a deep need for connection or panic about being abandoned.
+Brushing/Purring (brushing): A low, continuous rumbling sound that signifies deep contentment, safety, and relaxation. Cats often make this sound when being brushed or petted by their favorite human.
+
+## Dogs
+Excited Bark (bark): Rapid, high-pitched barks accompanied by a wagging tail or jumping. This means the dog is extremely happy, wants to play, or is greeting someone they love.
+Growl (growl): A low, guttural sound indicating discomfort, fear, or territorial defense. A growling dog is communicating boundaries and asking for space. It is a warning sign.
+Grunt (grunt): A soft, low-pitched sigh or grunt, often made when settling down or experiencing mild discomfort. It can be a sign of contentment when resting, or a sign of slight physical pain if moving.

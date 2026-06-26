@@ -7,45 +7,38 @@ MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", 
 MOCK_RESPONSES = {
     "cat": {
         "haughty_cat": {
-            "hunger": "Finally, you decide to feed your king.",
-            "play": "That piece of string moves. Interesting.",
-            "attention": "You may pet me, I grant you this favor.",
-            "fear": "There is an intruder in my kingdom.",
-            "pain": "Something is wrong in my domain.",
-            "content": "You have my favor for today.",
+            "food": "Finally, you decide to feed your king.",
+            "brushing": "You may pet me, I grant you this favor.",
+            "isolation": "There is an intruder in my kingdom.",
         },
         "grumpy_cat": {
-            "hunger": "Late for my meal again. Pathetic.",
-            "play": "You want to play? You have 30 seconds.",
-            "attention": "What now? Hurry up.",
-            "fear": "There's a noise. Go check. Now.",
-            "pain": "Something's wrong. Move it.",
-            "content": "Silence. I'm sleeping. Finally.",
+            "food": "Late for my meal again. Pathetic.",
+            "brushing": "You want to pet me? You have 3 seconds.",
+            "isolation": "Silence. I'm sleeping. Finally.",
         },
     },
     "dog": {
         "excited_dog": {
-            "hunger": "FOOD! FOOD! YES YES YES!",
-            "play": "PLAY WITH ME! Ball ball ball ball!",
-            "attention": "LOOK AT ME! I'm HERE!",
-            "fear": "I'm scared... STAY WITH ME!",
-            "pain": "Ouch ouch ouch... that hurts...",
-            "content": "I love you. You're the best. Life is beautiful.",
+            "food": "FOOD! FOOD! YES YES YES!",
+            "bark": "PLAY WITH ME! Ball ball ball ball!",
+            "growl": "LOOK AT ME! I'm HERE!",
+            "grunt": "Ouch ouch ouch... that hurts...",
         },
         "shy_dog": {
-            "hunger": "I'd love a little food, if you have time.",
-            "play": "I'd like to play with you, gently.",
-            "attention": "I'm here, next to you. I love you.",
-            "fear": "I'm a bit scared. Will you protect me?",
-            "pain": "I don't feel well. Stay with me.",
-            "content": "Everything is fine. I'm happy with you.",
+            "food": "I'd love a little food, if you have time.",
+            "bark": "I'd like to play with you, gently.",
+            "growl": "I'm a bit scared. Will you protect me?",
+            "grunt": "I don't feel well. Stay with me.",
         },
     },
 }
 
+from .rag_retriever import RAGRetriever
+
 class PetTranslatorLLM:
     def __init__(self):
         self.llm = None
+        self.rag = RAGRetriever()
         self._load_model()
 
     def _load_model(self):
@@ -68,7 +61,8 @@ class PetTranslatorLLM:
         if self.llm is not None:
             try:
                 system_prompt = get_system_prompt(personality)
-                user_prompt = build_user_prompt(intent_category, None, env_context, confidence, probabilities)
+                rag_context = self.rag.retrieve_context(f"What does {intent_category} mean?")
+                user_prompt = build_user_prompt(intent_category, rag_context, env_context, confidence, probabilities)
                 response = self.llm.create_chat_completion(
                     messages=[
                         {"role": "system", "content": system_prompt},

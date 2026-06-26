@@ -16,6 +16,7 @@ training/classification/models/*.h5
 *.pt
 *.pth
 *.ckpt
+*.gguf
 
 # --- Python ---
 __pycache__/
