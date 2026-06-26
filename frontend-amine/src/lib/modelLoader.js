@@ -11,6 +11,16 @@ let headModels = {};
 
 export async function loadModel() {
   const tf = await import('@tensorflow/tfjs');
+
+  try {
+    await tf.setBackend('webgl');
+    await tf.ready();
+  } catch (e) {
+    console.warn('WebGL backend failed, falling back to CPU:', e);
+    await tf.setBackend('cpu');
+    await tf.ready();
+  }
+
   const mobilenetModule = await import('@tensorflow-models/mobilenet');
 
   mobilenet = await mobilenetModule.load({ version: 2, alpha: 1.0 });
@@ -21,7 +31,7 @@ export async function loadModel() {
       headModels[animal] = await loadHeadWeights(animal, tf);
       console.log(`${animal} head weights loaded`);
     } catch (e) {
-      console.warn(`${animal} head not found, will use mock:`, e);
+      console.warn(`${animal} head weights not loaded, predictions will throw:`, e);
     }
   }
 }
@@ -63,7 +73,7 @@ export async function classifyAudio(audioBlob, animal) {
   const tf = await import('@tensorflow/tfjs');
 
   if (!mobilenet || !headModels[animal]) {
-    return mockClassify(audioBlob, animal);
+    throw new Error(`Model not loaded for "${animal}". Call loadModel() first.`);
   }
 
   const imgTensor = await preprocessAudio(audioBlob, animal, tf);
@@ -147,7 +157,7 @@ function melSpectrogram(audio, sampleRate) {
         re += val * Math.cos(angle);
         im -= val * Math.sin(angle);
       }
-      magSpectrogram[t * fftBins + k] = Math.sqrt(re * re + im * im);
+      magSpectrogram[t * fftBins + k] = re * re + im * im;
     }
   }
 
@@ -177,13 +187,23 @@ function melSpectrogram(audio, sampleRate) {
 
 function createMelFilterBank(sampleRate, nFft, nMels, fMin, fMax) {
   const fftBins = nFft / 2 + 1;
-  const melMin = 2595 * Math.log10(1 + fMin / 700);
-  const melMax = 2595 * Math.log10(1 + fMax / 700);
-  const melPoints = new Float32Array(nMels + 2);
+
+  // Slaney mel scale — matches librosa.filters.mel(htk=False)
+  const F_SP = 200.0 / 3.0;
+  const MIN_LOG_HZ = 1000.0;
+  const MIN_LOG_MEL = MIN_LOG_HZ / F_SP;
+  const LOGSTEP = Math.log(6.4) / 27.0;
+  const hzToMel = f => f < MIN_LOG_HZ ? f / F_SP : MIN_LOG_MEL + Math.log(f / MIN_LOG_HZ) / LOGSTEP;
+  const melToHz = m => m < MIN_LOG_MEL ? m * F_SP : MIN_LOG_HZ * Math.exp(LOGSTEP * (m - MIN_LOG_MEL));
+
+  const melMin = hzToMel(fMin);
+  const melMax = hzToMel(fMax);
+
+  const hzPoints = new Float32Array(nMels + 2);
   for (let i = 0; i < nMels + 2; i++) {
-    melPoints[i] = fMin + (fMax - fMin) * i / (nMels + 1);
+    hzPoints[i] = melToHz(melMin + (melMax - melMin) * i / (nMels + 1));
   }
-  const hzPoints = melPoints;
+
   const bin = new Float32Array(nMels + 2);
   for (let i = 0; i < nMels + 2; i++) {
     bin[i] = Math.floor((nFft + 1) * hzPoints[i] / sampleRate);
@@ -238,38 +258,3 @@ async function preprocessAudio(audioBlob, animal, tf) {
   return imgTensor;
 }
 
-function simpleHash(buf) {
-  let h = 5381;
-  for (let i = 0; i < buf.length && i < 4096; i += 64) {
-    h = ((h << 5) + h + buf[i]) | 0;
-  }
-  return Math.abs(h);
-}
-
-function mockClassify(audioBlob, animal) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const buf = new Uint8Array(reader.result);
-      const hash = simpleHash(buf);
-      const classes = CLASSES[animal];
-      const idx = hash % classes.length;
-      const probs = classes.map((c, i) => {
-        if (i === idx) return 0.82 + (hash % 15) / 100;
-        return 0.04 + ((hash + i * 37) % 8) / 100;
-      });
-      const sum = probs.reduce((a, b) => a + b, 0);
-      const normalized = probs.map(p => Math.round((p / sum) * 10000) / 10000);
-      const confidence = normalized[idx];
-      const label = confidence >= THRESHOLD ? classes[idx] : 'uncertain';
-      resolve({
-        animal,
-        label,
-        confidence,
-        probabilities: Object.fromEntries(classes.map((c, i) => [c, normalized[i]])),
-        threshold: THRESHOLD,
-      });
-    };
-    reader.readAsArrayBuffer(audioBlob);
-  });
-}
