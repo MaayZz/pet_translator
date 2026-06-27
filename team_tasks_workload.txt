@@ -26,7 +26,8 @@
 **Tasks:**
 - Frontend UI (modern React app with dark/light theme, three-column layout, chat-bubble translations).
 - Pet Selector (frontend selection with personality assigned server-side).
-- Real-Time Feedback (displaying TFJS in-browser classification probabilities alongside the LLM-translated output).
+- Edge Deployment & Integration (solving TFJS preprocessing bugs, explicit WebGL model loading).
+- UX & Reliability (3-second perception delay, probability bars, fallback mock LLM, energy-based VAD silence detection).
 
 ---
 **Total Estimated Workload:** 100% (equally distributed)

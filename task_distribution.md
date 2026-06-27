@@ -34,6 +34,7 @@ This document details the specific responsibilities for each team member regardi
 *   **Target Directories:** `frontend/`, `backend/main.py`
 *   **Technologies:** React + Vite, FastAPI, MediaRecorder API, Tailwind/CSS
 *   **Tasks:**
-    *   **Frontend UI:** Build a modern, responsive React application featuring a dark/light theme, three-column layout, and chat-bubble translations.
+    *   **Frontend UI & UX:** Build a modern React application featuring a dark/light theme, three-column layout, probability bars, and a 3-second perception delay. Handle silent audio via energy-based VAD (RMS < 0.015).
     *   **Pet Selector & State:** Implement the pet selector where personality is handled entirely server-side per species.
-    *   **Real-Time Integration:** Compute class probabilities in-browser via TFJS and display them alongside the remote LLM-translated output after inference completes.
+    *   **Edge Integration & Deployment:** Convert Keras model to GraphModel, resolve TFJS preprocessing bugs (mel scale, filter norm, power vs magnitude), and enforce explicit WebGL backend loading for macOS compatibility.
+    *   **Real-Time Feedback & Fallback:** Compute class probabilities in-browser via TFJS and display them alongside the remote LLM translation. Include a mock LLM fallback to ensure demo reliability.
