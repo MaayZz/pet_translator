@@ -1,0 +1,4 @@
+# Pet Translator - GitHub Repository
+
+The source code for the Pet Translator project is hosted on GitHub at the following URL:
+https://github.com/MaayZz/pet_translator.git
