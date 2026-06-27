@@ -182,8 +182,8 @@ style: |
 ## Amine KHALIL
 
 - **User Interface:** A modern, responsive React application with dark/light theme, three-column layout, and chat-bubble translations.
-- **Pet Selector:** Allows selecting the animal (cat/dog) — personality is assigned server-side per species (haughty_cat / excited_dog).
-- **Real-Time Feedback:** TFJS in-browser classification computes class probabilities and displays them alongside the LLM translation.
+- **Pet Selector:** Allows selecting the animal (cat/dog) - personality is assigned server-side per species (haughty_cat / excited_dog) and not exposed in the UI.
+- **Real-Time Feedback:** TFJS in-browser classification computes class probabilities (bark, growl, grunt / brushing, food, isolation) and displays them alongside the LLM-translated output after inference completes.
 - **TF.js Deployment:** Converted Keras model to GraphModel format; encountered 4 preprocessing bugs (wrong mel scale, missing filter norm, power vs magnitude, input range) that all had to match Python training exactly.
 - **VAD:** Energy-based silence detection (RMS < 0.015) prevents classification on silent audio, returning "no sound detected" immediately.
 - **Model Loading:** Explicit `tf.setBackend('webgl').catch(() => 'cpu')` + `tf.ready()` required before model load; without this, TF.js silently fails on macOS.
