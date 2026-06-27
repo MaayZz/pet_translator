@@ -181,9 +181,13 @@ style: |
 # Frontend Integration
 ## Amine KHALIL
 
-- **User Interface:** A modern, responsive React application.
-- **Pet Selector:** Allows the user to select the animal and its specific personality.
-- **Real-Time Feedback:** Displays local TFJS probabilities instantly before querying the remote LLM.
+- **User Interface:** A modern, responsive React application with dark/light theme, three-column layout, and chat-bubble translations.
+- **Pet Selector:** Allows selecting the animal (cat/dog) — personality is assigned server-side per species (haughty_cat / excited_dog).
+- **Real-Time Feedback:** TFJS in-browser classification computes class probabilities and displays them alongside the LLM translation.
+- **TF.js Deployment:** Converted Keras model to GraphModel format; encountered 4 preprocessing bugs (wrong mel scale, missing filter norm, power vs magnitude, input range) that all had to match Python training exactly.
+- **VAD:** Energy-based silence detection (RMS < 0.015) prevents classification on silent audio, returning "no sound detected" immediately.
+- **Model Loading:** Explicit `tf.setBackend('webgl').catch(() => 'cpu')` + `tf.ready()` required before model load; without this, TF.js silently fails on macOS.
+- **UX Research:** 3-second minimum loading delay (user perception study); probability bars show per-class confidence; mock LLM fallback ensures demo works without backend.
 
 </div>
 
