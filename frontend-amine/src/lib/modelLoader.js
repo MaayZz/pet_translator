@@ -6,8 +6,7 @@ const CLASSES = {
 const TARGET_LEN = { dog: 64000, cat: 32000 };
 const THRESHOLD = 0.5;
 
-let mobilenet = null;
-let headModels = {};
+let models = {};
 
 export async function loadModel() {
   const tf = await import('@tensorflow/tfjs');
@@ -21,50 +20,14 @@ export async function loadModel() {
     await tf.ready();
   }
 
-  const mobilenetModule = await import('@tensorflow-models/mobilenet');
-
-  mobilenet = await mobilenetModule.load({ version: 2, alpha: 1.0 });
-  console.log('MobileNetV2 backbone loaded');
-
   for (const animal of ANIMALS) {
     try {
-      headModels[animal] = await loadHeadWeights(animal, tf);
-      console.log(`${animal} head weights loaded`);
+      models[animal] = await tf.loadGraphModel(`/model/${animal}/model.json`);
+      console.log(`${animal} model loaded`);
     } catch (e) {
-      console.warn(`${animal} head weights not loaded, predictions will throw:`, e);
+      console.warn(`${animal} model not loaded, predictions will throw:`, e);
     }
   }
-}
-
-async function loadHeadWeights(animal, tf) {
-  const shapesRes = await fetch(`/model/${animal}/head_shapes.json`);
-  const shapes = await shapesRes.json();
-
-  const weightsRes = await fetch(`/model/${animal}/head_weights.bin`);
-  const weightsBuf = await weightsRes.arrayBuffer();
-  const weights = new Float32Array(weightsBuf);
-
-  let offset = 0;
-  const params = {};
-  for (const [name, shape] of Object.entries(shapes)) {
-    const size = shape.reduce((a, b) => a * b, 1);
-    params[name] = tf.tensor(weights.slice(offset, offset + size), shape);
-    offset += size;
-  }
-
-  return {
-    dense_kernel: params.dense_kernel,
-    dense_bias: params.dense_bias,
-    dense_1_kernel: params.dense_1_kernel,
-    dense_1_bias: params.dense_1_bias,
-  };
-}
-
-function applyHead(embedding, head, tf) {
-  return tf.tidy(() => {
-    const h = tf.relu(tf.add(tf.matMul(embedding, head.dense_kernel), head.dense_bias));
-    return tf.add(tf.matMul(h, head.dense_1_kernel), head.dense_1_bias);
-  });
 }
 
 export async function classifyAudio(audioBlob, animal) {
@@ -72,17 +35,15 @@ export async function classifyAudio(audioBlob, animal) {
 
   const tf = await import('@tensorflow/tfjs');
 
-  if (!mobilenet || !headModels[animal]) {
+  if (!models[animal]) {
     throw new Error(`Model not loaded for "${animal}". Call loadModel() first.`);
   }
 
   const imgTensor = await preprocessAudio(audioBlob, animal, tf);
-  const embedding = mobilenet.infer(imgTensor, true);
-  const logits = applyHead(embedding, headModels[animal], tf);
-  const probsTensor = tf.softmax(logits);
+  const probsTensor = models[animal].predict(imgTensor.expandDims(0));
   const probs = await probsTensor.data();
 
-  tf.dispose([imgTensor, embedding, logits, probsTensor]);
+  tf.dispose([imgTensor, probsTensor]);
 
   const classes = CLASSES[animal];
   const probsArray = Array.from(probs);
@@ -252,9 +213,9 @@ async function preprocessAudio(audioBlob, animal, tf) {
 
   let imgTensor = tf.tensor3d(rgb, [nMels, nFrames, 3]);
   imgTensor = tf.image.resizeBilinear(imgTensor.expandDims(0), [96, 96]);
-  imgTensor = imgTensor.mul(255.0);
+  // Convert [0, 1] → [-1, 1] to match MobileNetV2 preprocess_input convention
+  imgTensor = imgTensor.mul(2.0).sub(1.0);
   imgTensor = imgTensor.squeeze([0]);
 
   return imgTensor;
 }
-
