@@ -225,7 +225,7 @@ style: |
 - **End-to-End Pipeline:** Successfully integrated Edge AI (TFJS) for low-latency classification with Cloud AI (Llama 3.2 + RAG) for linguistic grounding.
 - **Scientific Rigor:** Demonstrated the critical impact of dataset size ("Data Ceiling") through exhaustive evaluation and cross-validation.
 - **Robust Architecture:** Solved real-world constraints like ambient noise (VAD) and LLM hallucinations (RAG).
-- **Final Result:** A fully functional Proof of Concept bridging audio signal processing, Edge classification, and NLP.
+- **Final Result:** A fully functional WebApp simulating a mobile application, bridging audio signal processing, Edge classification, and NLP.
 
 <br>
 <p><strong>Thank you.</strong></p>
