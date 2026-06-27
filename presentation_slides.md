@@ -185,11 +185,21 @@ style: |
 
 - **User Interface:** A modern, responsive React application with dark/light theme, three-column layout, and chat-bubble translations.
 - **Pet Selector:** Allows selecting the animal (cat/dog) - personality is assigned server-side per species (haughty_cat / excited_dog) and not exposed in the UI.
-- **Real-Time Feedback:** TFJS in-browser classification computes class probabilities (bark, growl, grunt / brushing, food, isolation) and displays them alongside the LLM-translated output after inference completes.
-- **TF.js Deployment:** Converted Keras model to GraphModel format; encountered 4 preprocessing bugs (wrong mel scale, missing filter norm, power vs magnitude, input range) that all had to match Python training exactly.
-- **VAD:** Energy-based silence detection (RMS < 0.015) prevents classification on silent audio, returning "no sound detected" immediately.
-- **Model Loading:** Explicit `tf.setBackend('webgl').catch(() => 'cpu')` + `tf.ready()` required before model load; without this, TF.js silently fails on macOS.
-- **UX Research:** 3-second minimum loading delay (user perception study); probability bars show per-class confidence; mock LLM fallback ensures demo works without backend.
+- **Real-Time Feedback:** TFJS in-browser classification computes class probabilities (bark, growl, grunt / brushing, food, isolation) and displays them alongside the LLM-translated output.
+
+</div>
+
+---
+
+<div class="glass-card">
+
+# Edge Deployment & UX
+## Amine KHALIL
+
+- **TF.js Deployment:** Converted Keras model to GraphModel format; fixed 4 preprocessing bugs (mel scale, filter norm, power vs magnitude, input range) to match Python exactly.
+- **VAD:** Energy-based silence detection (RMS < 0.015) prevents classification on silent audio, returning "no sound detected".
+- **Model Loading:** Explicit `tf.setBackend('webgl').catch(() => 'cpu')` required before model load to prevent silent fails on macOS.
+- **UX Research:** 3-second minimum loading delay for perception; probability bars; mock LLM fallback ensures demo works offline.
 
 </div>
 
