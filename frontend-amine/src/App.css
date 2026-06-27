@@ -660,6 +660,62 @@ code, .tech-code {
   letter-spacing: 0.3px;
 }
 
+/* ── Probability Bars ── */
+
+.message-probs {
+  margin: 6px 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prob-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+}
+
+.prob-label {
+  width: 48px;
+  text-align: right;
+  color: var(--phone-text-secondary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.prob-bar-track {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.prob-bar-fill {
+  height: 100%;
+  background: rgba(138, 150, 255, 0.3);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.prob-bar-fill.prob-bar-top {
+  background: var(--phone-accent);
+}
+
+.prob-value {
+  width: 34px;
+  text-align: left;
+  color: var(--phone-text-secondary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.prob-value.prob-value-top {
+  color: var(--phone-accent);
+  font-weight: 700;
+}
+
 /* ── Easter Egg ── */
 
 .easter-overlay {

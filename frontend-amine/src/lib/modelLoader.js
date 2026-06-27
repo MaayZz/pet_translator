@@ -39,7 +39,17 @@ export async function classifyAudio(audioBlob, animal) {
     throw new Error(`Model not loaded for "${animal}". Call loadModel() first.`);
   }
 
-  const imgTensor = await preprocessAudio(audioBlob, animal, tf);
+  const audioCtx = new AudioContext({ sampleRate: 16000 });
+  const arrayBuffer = await audioBlob.arrayBuffer();
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+  let samples = audioBuffer.getChannelData(0);
+  samples = resampleLinear(samples, audioBuffer.sampleRate, 16000);
+
+  if (!detectVoice(samples)) {
+    return { animal, label: 'no_sound', confidence: 0, probabilities: null, threshold: THRESHOLD };
+  }
+
+  const imgTensor = await preprocessAudio(samples, animal, tf);
   const probsTensor = models[animal].predict(imgTensor.expandDims(0));
   const probs = await probsTensor.data();
 
@@ -59,6 +69,17 @@ export async function classifyAudio(audioBlob, animal) {
     probabilities: Object.fromEntries(classes.map((c, i) => [c, Math.round(probsArray[i] * 10000) / 10000])),
     threshold: THRESHOLD,
   };
+}
+
+const VAD_THRESHOLD = 0.015;
+
+function detectVoice(samples) {
+  let sumSq = 0;
+  for (let i = 0; i < samples.length; i++) {
+    sumSq += samples[i] * samples[i];
+  }
+  const rms = Math.sqrt(sumSq / samples.length);
+  return rms >= VAD_THRESHOLD;
 }
 
 function resampleLinear(audio, fromRate, toRate) {
@@ -185,12 +206,7 @@ function createMelFilterBank(sampleRate, nFft, nMels, fMin, fMax) {
   return basis;
 }
 
-async function preprocessAudio(audioBlob, animal, tf) {
-  const audioCtx = new AudioContext({ sampleRate: 16000 });
-  const arrayBuffer = await audioBlob.arrayBuffer();
-  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-  let samples = audioBuffer.getChannelData(0);
-  samples = resampleLinear(samples, audioBuffer.sampleRate, 16000);
+async function preprocessAudio(samples, animal, tf) {
   samples = fixLength(samples, TARGET_LEN[animal]);
 
   const { mel, nFrames } = melSpectrogram(samples, 16000);
