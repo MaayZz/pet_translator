@@ -126,7 +126,7 @@ style: |
 
 - **The Problem:** Small datasets (113 dog clips, 440 cat clips) lead to severe overfitting.
 - **The Solution:** Transfer Learning. We used a frozen **MobileNetV2** architecture.
-- **Deployment:** The Keras model was converted to `.tflite`, quantized to INT8, and deployed seamlessly in the browser.
+- **Deployment:** The full Keras model (backbone + head) was exported as a single TF.js graph model per animal via `tensorflowjs_converter` — no `.tflite`, no INT8 quantization — and served directly in the browser.
 
 </div>
 

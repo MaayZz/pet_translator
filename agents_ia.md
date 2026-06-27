@@ -25,11 +25,9 @@ Dispositif attaché au collier d'un animal (chat/chien) qui capture les sons, le
 | Composant | Technologie |
 |-----------|-------------|
 | Framework | TensorFlow / Keras |
-| Modèle | MobileNetV2 fine-tuné sur spectrogrammes |
-| Catégories | Hunger, Pain, Play, Attention, Fear, Content |
-| Format déploiement | `.tflite` → TensorFlow.js (browser) |
-| Taille | ~3-5 MB (INT8 quantized) |
-| Latence browser | ~20-50ms |
+| Modèle | 2 classifieurs séparés : backbone MobileNetV2 **gelé** (ImageNet, pooling=avg) + tête dense entraînée (Dense(64,relu)→Dropout(0.3)→Dense(3,softmax)) |
+| Catégories | **Chien :** bark / growl / grunt · **Chat :** brushing / food / isolation |
+| Format déploiement | Modèle Keras complet (backbone+tête) → TF.js graph model, 1 modèle par animal (via `src/export_tfjs.py`) — pas de `.tflite`, pas d'INT8 |
 
 ### LLM (Python → Fine-tuning LoRA)
 
@@ -149,10 +147,9 @@ pet_translator/
 - `training/classification/data/` : préparation des données audio
 
 ### Membre 2 — Classification (MobileNetV2)
-- `training/classification/train.py` : fine-tuning
-- `training/classification/convert.py` : TFLite → TFJS
-- `frontend/public/model/` : déploiement du modèle dans le browser
-- `frontend/src/lib/modelLoader.js` : intégration TFJS
+- `training/classification/src/` : entraînement (un classifieur par animal — backbone MobileNetV2 gelé + tête dense), évaluation par CV group-aware (macro-F1), export TF.js complet (`export_tfjs.py`)
+- `frontend-amine/public/model/{dog,cat}/` : modèles TF.js (backbone + tête fusionnés, un par animal)
+- `frontend-amine/src/lib/modelLoader.js` : chargement, préprocessing audio et inférence TF.js
 
 ### Membre 3 — LLM (Llama + LoRA)
 - `training/llm/dataset.py` : génération dataset synthétique

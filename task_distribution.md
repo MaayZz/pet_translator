@@ -12,13 +12,13 @@ This document details the specific responsibilities for each team member regardi
     *   **Feature Extraction:** Convert raw audio waves into Mel-spectrograms and MFCCs using `librosa` to feed the classification model.
 
 ## Student 2: Anas ISARTI - Classification Models (MobileNetV2 to TFJS)
-**Role:** Responsible for the analytical "brain" that translates raw audio features into an emotional category directly in the browser.
-*   **Target Directories:** `training/classification/`, `frontend/public/model/`, `frontend/src/lib/`
+**Role:** Responsible for classifying pet audio into behavioral categories directly in the browser using TensorFlow.js.
+*   **Target Directories:** `training/classification/src/`, `frontend-amine/public/model/`, `frontend-amine/src/lib/`
 *   **Technologies:** TensorFlow/Keras, TensorFlow.js, MobileNetV2
 *   **Tasks:**
-    *   **Model Fine-Tuning:** Fine-tune a MobileNetV2 architecture on the spectrograms to classify intentions (Hunger, Pain, Play, Attention, Fear, Content).
-    *   **Edge Optimization:** Convert the trained model (`.h5`) to `.tflite` and then to TensorFlow.js format with INT8 quantization.
-    *   **Browser Integration:** Deploy the TFJS model to the frontend (`modelLoader.js`) to ensure low latency (~20-50ms) local inference.
+    *   **Transfer Learning (Two Classifiers):** Train two separate classifiers — one for dogs (bark / growl / grunt) and one for cats (brushing / food / isolation). Each uses a frozen MobileNetV2 backbone (ImageNet, pooling=avg) as a feature extractor with a small trained dense head (Dense(64, relu) → Dropout(0.3) → Dense(3, softmax)).
+    *   **Evaluation:** Cross-validate with group-aware splits (StratifiedGroupKFold by cat_id for the cat model; StratifiedKFold k=5 for the dog model). Reference metric: macro-F1. Results: dog ~0.82–0.85; cat ~0.52 (food class CV F1 ~0.30–0.37 — bottleneck is dataset size, not model capacity).
+    *   **TF.js Export & Browser Integration:** Export the full Keras model (backbone + head) as a single TF.js graph model per animal via `src/export_tfjs.py` — no `.tflite`, no INT8 quantization. Deploy to `frontend-amine/public/model/{animal}/` and integrate inference in `frontend-amine/src/lib/modelLoader.js`.
 
 ## Student 3: Abir ISLAM - LLM Fine-Tuning & Inference (Llama 3.2 + LoRA)
 **Role:** Responsible for generating human-like "translations" with customized pet personalities.
