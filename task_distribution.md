@@ -11,14 +11,14 @@ This document details the specific responsibilities for each team member regardi
     *   **Preprocessing Pipeline:** Implement ambient noise reduction (`noisereduce`) and Voice Activity Detection (`webrtcvad`).
     *   **Feature Extraction:** Convert raw audio waves into Mel-spectrograms and MFCCs using `librosa` to feed the classification model.
 
-## Student 2: Anas ISARTI - Classification Models (MobileNetV2 to TFJS)
-**Role:** Responsible for the analytical "brain" that translates raw audio features into an emotional category directly in the browser.
+## Student 2: Anas ISARTI - Classification Models (MobileNetV2 to TFJS) & Scientific Evaluation
+**Role:** Responsible for the analytical "brain" that translates raw audio features into an emotional category directly in the browser, and scientifically proving data limitations.
 *   **Target Directories:** `training/classification/`, `frontend/public/model/`, `frontend/src/lib/`
-*   **Technologies:** TensorFlow/Keras, TensorFlow.js, MobileNetV2
+*   **Technologies:** TensorFlow/Keras, TensorFlow.js, MobileNetV2, SMOTE
 *   **Tasks:**
-    *   **Model Fine-Tuning:** Fine-tune a MobileNetV2 architecture on the spectrograms to classify intentions (Hunger, Pain, Play, Attention, Fear, Content).
-    *   **Edge Optimization:** Convert the trained model (`.h5`) to `.tflite` and then to TensorFlow.js format with INT8 quantization.
-    *   **Browser Integration:** Deploy the TFJS model to the frontend (`modelLoader.js`) to ensure low latency (~20-50ms) local inference.
+    *   **Model Fine-Tuning:** Fine-tune a frozen MobileNetV2 architecture with a small trained head to avoid overfitting on tiny datasets.
+    *   **Scientific Evaluation:** Implement group-aware cross-validation (split by individual cat) to prevent data leakage. Test 5 independent levers (AST backbone, focal loss, etc.) to establish the "Data Ceiling".
+    *   **Browser Integration:** Export the full model directly to TensorFlow.js (without .tflite) and verify output is mathematically identical to Python (diff=0).
 
 ## Student 3: Abir ISLAM - LLM Fine-Tuning & Inference (Llama 3.2 + LoRA)
 **Role:** Responsible for generating human-like "translations" with customized pet personalities.
@@ -29,11 +29,11 @@ This document details the specific responsibilities for each team member regardi
     *   **Model Fine-Tuning:** Execute LoRA fine-tuning on Llama 3.2 using `unsloth` and `peft`.
     *   **Deployment & Prompting:** Convert the fine-tuned model to GGUF (Q4_K_M) format for efficient serving via `llama.cpp`. Handle prompt engineering to establish personalities (e.g., haughty cat, excited dog).
 
-## Student 4: Amine KHALIL - Frontend Web, Backend API & Full Integration
+## Student 4: Amine KHALIL - Frontend Web, UI/UX & Full Integration
 **Role:** Responsible for user experience, API routing, and the final end-to-end communication of the pipeline.
 *   **Target Directories:** `frontend/`, `backend/main.py`
-*   **Technologies:** React + Vite, FastAPI, MediaRecorder API
+*   **Technologies:** React + Vite, FastAPI, MediaRecorder API, Tailwind/CSS
 *   **Tasks:**
-    *   **Frontend UI:** Build the React web interface (Chat UI, Audio Recorder, Pet Selector) using MediaRecorder API to capture browser audio.
-    *   **Backend Server:** Develop the FastAPI server (`main.py`) to expose the `/translate` endpoint handling requests from the frontend to the Llama inference engine.
-    *   **Integration & Deliverables:** Ensure smooth communication from audio capture → TFJS classification → LLM generation → Chat UI. Coordinate the creation of the 10-minute demo video and technical report.
+    *   **Frontend UI:** Build a modern, responsive React application featuring a dark/light theme, three-column layout, and chat-bubble translations.
+    *   **Pet Selector & State:** Implement the pet selector where personality is handled entirely server-side per species.
+    *   **Real-Time Integration:** Compute class probabilities in-browser via TFJS and display them alongside the remote LLM-translated output after inference completes.

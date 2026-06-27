@@ -5,28 +5,28 @@
 **Tasks:**
 - Data Collection (ESC-50, AudioSet, custom recordings).
 - Preprocessing Pipeline (ambient noise reduction using `noisereduce`, Voice Activity Detection).
-- Feature Extraction (converting raw audio waves into Mel-spectrograms and MFCCs using `librosa`).
+- Feature Extraction (converting raw audio waves into Mel-spectrograms and MFCCs using `librosa`, handling length outliers).
 
 ## 2. Anas ISARTI (25% Contribution)
-**Role:** Classification Models (MobileNetV2 to TFJS)
+**Role:** Classification Models (MobileNetV2 to TFJS) & Scientific Evaluation
 **Tasks:**
-- Model Fine-Tuning (fine-tuning MobileNetV2 on spectrograms to classify intentions).
-- Edge Optimization (converting Keras models to TensorFlow.js format with INT8 quantization).
-- Browser Integration (deploying TFJS model for low-latency local inference).
+- Model Fine-Tuning (frozen MobileNetV2 with a small trained head for feature extraction).
+- Scientific Evaluation (Group-aware cross validation without data leakage, testing AST backbone, focal loss, SMOTE).
+- Edge Deployment (Exporting full model directly to TensorFlow.js without .tflite intermediary, achieving diff=0 vs Python).
 
 ## 3. Abir ISLAM (25% Contribution)
-**Role:** LLM Fine-Tuning & Inference (Llama 3.2 + LoRA)
+**Role:** LLM Fine-Tuning, RAG & Inference (Llama 3.2 + LoRA)
 **Tasks:**
-- Dataset Generation (creating a synthetic dataset for intentions and personalities).
+- Dataset Generation (synthetic dataset for intentions and personalities, handled server-side).
 - Model Fine-Tuning (using LoRA and Unsloth to fine-tune Llama 3.2).
-- RAG System & Deployment (building a semantic behavioral knowledge base and converting the model to GGUF for local inference).
+- RAG System & Deployment (building a semantic behavioral knowledge base and converting the model to GGUF for local CPU inference).
 
 ## 4. Amine KHALIL (25% Contribution)
-**Role:** Frontend Web, Backend API & Full Integration
+**Role:** Frontend Web, UI/UX & Full Integration
 **Tasks:**
-- Frontend UI (building the React web interface with audio capture capabilities).
-- Backend Server (developing the FastAPI server).
-- Full Integration (connecting the audio capture, TFJS edge classification, and remote LLM generation).
+- Frontend UI (modern React app with dark/light theme, three-column layout, chat-bubble translations).
+- Pet Selector (frontend selection with personality assigned server-side).
+- Real-Time Feedback (displaying TFJS in-browser classification probabilities alongside the LLM-translated output).
 
 ---
 **Total Estimated Workload:** 100% (equally distributed)
