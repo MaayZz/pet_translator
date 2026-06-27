@@ -124,9 +124,11 @@ style: |
 # Classification Models
 ## Anas ISARTI
 
-- **The Problem:** Small datasets (113 dog clips, 440 cat clips) lead to severe overfitting.
-- **The Solution:** Transfer Learning. We used a frozen **MobileNetV2** architecture.
-- **Deployment:** The Keras model was converted to `.tflite`, quantized to INT8, and deployed seamlessly in the browser.
+- **Task:** 2 classifiers, 1 par animal. Dog: bark/growl/grunt. Cat: brushing/food/isolation.
+- **Challenge:** Tiny datasets (113 dog, 440 cat clips) → need a model that generalizes + an evaluation I can trust.
+- **Approach:** Frozen **MobileNetV2** (feature extractor) + small trained head. Avoids overfitting vs training from scratch.
+- **Evaluation:** Group-aware cross-validation (split by individual cat) → no data leakage.
+- **Deployment:** Full model exported to **TensorFlow.js**, output verified identical to Python (diff = 0).
 
 </div>
 
@@ -137,10 +139,10 @@ style: |
 # The Data Ceiling
 ## Analyzing Limits
 
-- The Dog model performs well (**~85% Accuracy**).
-- The Cat model plateaued at **~35% F1-score** for the `food` class.
-- **Experimentation:** Hyperparameter tuning, Architectures swaps, Class-imbalance handling.
-- **Conclusion:** The bottleneck is the dataset size itself, not the model capacity.
+- **Dog model:** Solid — CV macro-F1 ~0.82–0.85.
+- **Cat model:** Good on isolation, weak on food — CV F1 ~0.30–0.37.
+- **Experimentation:** 5 independent levers tested (head tuning, augmentation, classifier comparison, AST backbone, focal loss + SMOTE) — all plateaued.
+- **Conclusion:** Bottleneck is the dataset size (food: only 92 clips), not model capacity.
 
 </div>
 
@@ -210,9 +212,10 @@ style: |
 # Conclusion
 ## 
 
-- **Deployed** a functional hybrid Edge/Cloud AI system.
-- **Applied** rigorous scientific methodology to identify data limitations.
-- **Mastered** the full stack: Audio Processing, Computer Vision, and NLP.
+- **End-to-End Pipeline:** Successfully integrated Edge AI (TFJS) for low-latency classification with Cloud AI (Llama 3.2 + RAG) for linguistic grounding.
+- **Scientific Rigor:** Demonstrated the critical impact of dataset size ("Data Ceiling") through exhaustive evaluation and cross-validation.
+- **Robust Architecture:** Solved real-world constraints like ambient noise (VAD) and LLM hallucinations (RAG).
+- **Final Result:** A fully functional Proof of Concept bridging audio processing, computer vision, and NLP.
 
 <br>
 <p><strong>Thank you.</strong></p>
