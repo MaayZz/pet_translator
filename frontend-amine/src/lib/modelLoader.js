@@ -1,6 +1,6 @@
 const ANIMALS = ['dog', 'cat'];
 const CLASSES = {
-  dog: ['bark', 'growl', 'grunt'],
+  dog: ['growl', 'bark', 'grunt'],
   cat: ['brushing', 'food', 'isolation'],
 };
 const TARGET_LEN = { dog: 64000, cat: 32000 };
