@@ -4,7 +4,7 @@ import AudioRecorder from "./components/AudioRecorder";
 import ChatUI from "./components/ChatUI";
 import LeftInfo from "./components/LeftInfo";
 import RightInfo from "./components/RightInfo";
-import { classifyAudio } from "./lib/modelLoader";
+import { loadModel, classifyAudio } from "./lib/modelLoader";
 import { translate } from "./lib/api";
 import "./App.css";
 
@@ -64,20 +64,56 @@ function App() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  useEffect(() => { loadModel().catch(console.error); }, []);
+
   const handleAudioCaptured = useCallback(async (audioBlob) => {
     setLoading(true);
-    const result = await classifyAudio(audioBlob, petType);
-    const response = await translate({
-      animal: result.animal,
-      label: result.label,
-      confidence: result.confidence,
-      probabilities: result.probabilities,
-      history: messages,
-    });
-    setMessages((prev) => [
-      ...prev,
-      { role: "pet", text: response.text, emotion: response.emotion || result.label, confidence: response.confidence, timestamp: response.timestamp || new Date().toISOString(), petType: result.animal },
-    ]);
+    const delay = new Promise(r => setTimeout(r, 3000));
+    try {
+      const result = await classifyAudio(audioBlob, petType);
+
+      if (result.label === 'no_sound') {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "pet",
+            text: "No sound detected — your pet seems quiet.",
+            emotion: "no_sound",
+            confidence: 0,
+            timestamp: new Date().toISOString(),
+            petType: result.animal,
+            label: "no_sound",
+            probabilities: null,
+            threshold: result.threshold,
+          },
+        ]);
+      } else {
+        const response = await translate({
+          animal: result.animal,
+          label: result.label,
+          confidence: result.confidence,
+          probabilities: result.probabilities,
+          history: messages,
+        });
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "pet",
+            text: response.text,
+            emotion: response.emotion || result.label,
+            confidence: response.confidence,
+            timestamp: response.timestamp || new Date().toISOString(),
+            petType: result.animal,
+            label: result.label,
+            probabilities: result.probabilities,
+            threshold: result.threshold,
+          },
+        ]);
+      }
+    } catch (err) {
+      console.error("Classification failed:", err);
+    }
+    await delay;
     setLoading(false);
   }, [petType, messages]);
 

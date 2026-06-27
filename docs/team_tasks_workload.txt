@@ -1,0 +1,33 @@
+# Pet Translator - Team Tasks & Workload
+
+## 1. Mohamed MELLOUK (25% Contribution)
+**Role:** Audio Signal Processing and Pipeline
+**Tasks:**
+- Data Collection (ESC-50, AudioSet, custom recordings).
+- Preprocessing Pipeline (ambient noise reduction using `noisereduce`, Voice Activity Detection).
+- Feature Extraction (converting raw audio waves into Mel-spectrograms and MFCCs using `librosa`, handling length outliers).
+
+## 2. Anas ISARTI (25% Contribution)
+**Role:** Classification Models (MobileNetV2 to TFJS) & Scientific Evaluation
+**Tasks:**
+- Model Fine-Tuning (frozen MobileNetV2 with a small trained head for feature extraction).
+- Scientific Evaluation (Group-aware cross validation without data leakage, testing AST backbone, focal loss, SMOTE).
+- Edge Deployment (Exporting full model directly to TensorFlow.js without .tflite intermediary, achieving diff=0 vs Python).
+
+## 3. Abir ISLAM (25% Contribution)
+**Role:** LLM Fine-Tuning, RAG & Inference (Llama 3.2 + LoRA)
+**Tasks:**
+- Dataset Generation (synthetic dataset for intentions and personalities, handled server-side).
+- Model Fine-Tuning (using LoRA and Unsloth to fine-tune Llama 3.2).
+- RAG System & Deployment (building a semantic behavioral knowledge base and converting the model to GGUF for local CPU inference).
+
+## 4. Amine KHALIL (25% Contribution)
+**Role:** Frontend Web, UI/UX & Full Integration
+**Tasks:**
+- Frontend UI (modern React app with dark/light theme, three-column layout, chat-bubble translations).
+- Pet Selector (frontend selection with personality assigned server-side).
+- Edge Deployment & Integration (solving TFJS preprocessing bugs, explicit WebGL model loading).
+- UX & Reliability (3-second perception delay, probability bars, fallback mock LLM, energy-based VAD silence detection).
+
+---
+**Total Estimated Workload:** 100% (equally distributed)

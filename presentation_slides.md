@@ -124,9 +124,11 @@ style: |
 # Classification Models
 ## Anas ISARTI
 
-- **The Problem:** Small datasets (113 dog clips, 440 cat clips) lead to severe overfitting.
-- **The Solution:** Transfer Learning. We used a frozen **MobileNetV2** architecture.
-- **Deployment:** The full Keras model (backbone + head) was exported as a single TF.js graph model per animal via `tensorflowjs_converter` — no `.tflite`, no INT8 quantization — and served directly in the browser.
+- **Task:** 2 classifiers, 1 per animal. Dog: bark/growl/grunt. Cat: brushing/food/isolation.
+- **Challenge:** Tiny datasets (113 dog, 440 cat clips) → need a model that generalizes + an evaluation I can trust.
+- **Approach:** Frozen **MobileNetV2** (feature extractor) + small trained head. Avoids overfitting vs training from scratch.
+- **Evaluation:** Group-aware cross-validation (split by individual cat) → no data leakage.
+- **Deployment:** Full model exported to **TensorFlow.js**, output verified identical to Python (diff = 0).
 
 </div>
 
@@ -137,10 +139,10 @@ style: |
 # The Data Ceiling
 ## Analyzing Limits
 
-- The Dog model performs well (**~85% Accuracy**).
-- The Cat model plateaued at **~35% F1-score** for the `food` class.
-- **Experimentation:** Hyperparameter tuning, Architectures swaps, Class-imbalance handling.
-- **Conclusion:** The bottleneck is the dataset size itself, not the model capacity.
+- **Dog model:** Solid — CV macro-F1 ~0.82–0.85.
+- **Cat model:** Good on isolation, weak on food — CV F1 ~0.30–0.37.
+- **Experimentation:** 5 independent levers tested (head tuning, augmentation, classifier comparison, AST backbone, focal loss + SMOTE) — all plateaued.
+- **Conclusion:** Bottleneck is the dataset size (food: only 92 clips), not model capacity.
 
 </div>
 
@@ -181,9 +183,23 @@ style: |
 # Frontend Integration
 ## Amine KHALIL
 
-- **User Interface:** A modern, responsive React application.
-- **Pet Selector:** Allows the user to select the animal and its specific personality.
-- **Real-Time Feedback:** Displays local TFJS probabilities instantly before querying the remote LLM.
+- **User Interface:** A modern, responsive React application with dark/light theme, three-column layout, and chat-bubble translations.
+- **Pet Selector:** Allows selecting the animal (cat/dog) - personality is assigned server-side per species (haughty_cat / excited_dog) and not exposed in the UI.
+- **Real-Time Feedback:** TFJS in-browser classification computes class probabilities (bark, growl, grunt / brushing, food, isolation) and displays them alongside the LLM-translated output.
+
+</div>
+
+---
+
+<div class="glass-card">
+
+# Edge Deployment & UX
+## Amine KHALIL
+
+- **TF.js Deployment:** Converted Keras model to GraphModel format; fixed 4 preprocessing bugs (mel scale, filter norm, power vs magnitude, input range) to match Python exactly.
+- **VAD:** Energy-based silence detection (RMS < 0.015) prevents classification on silent audio, returning "no sound detected".
+- **Model Loading:** Explicit `tf.setBackend('webgl').catch(() => 'cpu')` required before model load to prevent silent fails on macOS.
+- **UX Research:** 3-second minimum loading delay for perception; probability bars; mock LLM fallback ensures demo works offline.
 
 </div>
 
@@ -206,9 +222,10 @@ style: |
 # Conclusion
 ## 
 
-- **Deployed** a functional hybrid Edge/Cloud AI system.
-- **Applied** rigorous scientific methodology to identify data limitations.
-- **Mastered** the full stack: Audio Processing, Computer Vision, and NLP.
+- **End-to-End Pipeline:** Successfully integrated Edge AI (TFJS) for low-latency classification with Cloud AI (Llama 3.2 + RAG) for linguistic grounding.
+- **Scientific Rigor:** Demonstrated the critical impact of dataset size ("Data Ceiling") through exhaustive evaluation and cross-validation.
+- **Robust Architecture:** Solved real-world constraints like ambient noise (VAD) and LLM hallucinations (RAG).
+- **Final Result:** A fully functional WebApp simulating a mobile application, bridging audio signal processing, Edge classification, and NLP.
 
 <br>
 <p><strong>Thank you.</strong></p>
